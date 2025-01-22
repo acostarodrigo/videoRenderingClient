@@ -22,19 +22,22 @@ export const videoRenderingDefaultRegistryTypes: ReadonlyArray<[string, Generate
 ]
 
 function createDefaultRegistry(): Registry {
-    return new Registry(defaultRegistryTypes)
+    const registry = new Registry(defaultRegistryTypes)
+    registry.register(videoRenderingTypes[0][0],videoRenderingTypes[0][1]  );
+    registry.register(videoRenderingTypes[1][0],videoRenderingTypes[1][1]  );
+    return registry
 }
 
-export class CheckersSigningStargateClient extends SigningStargateClient {
+export class VideoRenderingSigningStargateClient extends SigningStargateClient {
     public readonly checkersQueryClient: VideoRenderingExtension | undefined
 
     public static async connectWithSigner(
         endpoint: string,
         signer: OfflineSigner,
         options: SigningStargateClientOptions = {},
-    ): Promise<CheckersSigningStargateClient> {
+    ): Promise<VideoRenderingSigningStargateClient> {
         const tmClient = await Tendermint34Client.connect(endpoint)
-        return new CheckersSigningStargateClient(tmClient, signer, {
+        return new VideoRenderingSigningStargateClient(tmClient, signer, {
             registry: createDefaultRegistry(),
             ...options,
         })

@@ -4,8 +4,8 @@ import {
     MsgCreateVideoRenderingTaskResponse
 } from "../types/generated/janction/videoRendering/v1/tx"
 
-export const typeUrlMsgCreateVideoRenderingTask = "/janction.videoRendering.MsgCreateVideoRenderingTask"
-export const typeUrlMsgCreateVideoRenderingTaskResponse = "/janction.videoRendering.MsgCreateVideoRenderingTaskResponse"
+export const typeUrlMsgCreateVideoRenderingTask = "/janction.videoRendering.v1.MsgCreateVideoRenderingTask"
+export const typeUrlMsgCreateVideoRenderingTaskResponse = "/janction.videoRendering.v1.MsgCreateVideoRenderingTaskResponse"
 
 export const videoRenderingTypes: ReadonlyArray<[string, GeneratedType]> = [
     [typeUrlMsgCreateVideoRenderingTask, MsgCreateVideoRenderingTask],
@@ -14,7 +14,7 @@ export const videoRenderingTypes: ReadonlyArray<[string, GeneratedType]> = [
 ]
 
 export interface MsgCreateVideoRenderingTaskEncodeObject extends EncodeObject {
-    readonly typeUrl: "/janction.videoRendering.MsgCreateVideoRenderingTask"
+    readonly typeUrl: "/janction.videoRendering.v1.MsgCreateVideoRenderingTask"
     readonly value: Partial<MsgCreateVideoRenderingTask>
 }
 
@@ -25,7 +25,7 @@ export function isMsgCreateVideoRenderingTaskEncodeObject(
 }
 
 export interface MsgCreateVideoRenderingTaskResponseEncodeObject extends EncodeObject {
-    readonly typeUrl: "/janction.videoRendering.MsgCreateVideoRenderingTaskResponse"
+    readonly typeUrl: "/janction.videoRendering.v1.MsgCreateVideoRenderingTaskResponse"
     readonly value: Partial<MsgCreateVideoRenderingTaskResponse>
 }
 
