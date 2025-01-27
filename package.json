@@ -2,6 +2,7 @@
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.3",
     "@cosmjs/stargate": "0.28.11",
+    "base-58": "^0.0.1",
     "protobufjs": "^7.0.0"
   },
   "name": "client",
