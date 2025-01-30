@@ -3,10 +3,10 @@ import { fromHex } from "@cosmjs/encoding"
 
 export const getSignerFromMnemonic = async (mnemonic: string): Promise<OfflineDirectSigner> => {
     return DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-        prefix: "mini",
+        prefix: "janction",
     })
 }
 
 export const getSignerFromPriKey = async (priKey: string): Promise<OfflineDirectSigner> => {
-    return DirectSecp256k1Wallet.fromKey(fromHex(priKey), "mini")
+    return DirectSecp256k1Wallet.fromKey(fromHex(priKey), "janction")
 }
