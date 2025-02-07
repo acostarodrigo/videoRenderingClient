@@ -7,7 +7,7 @@
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import Long from "long";
-import { VideoRenderingTask } from "./types";
+import { VideoRenderingLogs, VideoRenderingTask, Worker } from "./types";
 
 export const protobufPackage = "janction.videoRendering.v1";
 
@@ -16,7 +16,6 @@ export const protobufPackage = "janction.videoRendering.v1";
  * method.
  */
 export interface QueryGetVideoRenderingTaskRequest {
-  /** index defines the index of the game to retrieve. */
   index: string;
 }
 
@@ -29,11 +28,36 @@ export interface QueryGetVideoRenderingTaskResponse {
   videoRenderingTask?: VideoRenderingTask | undefined;
 }
 
+/**
+ * QueryGetGameRequest is the request type for the Query/GetGame RPC
+ * method.
+ */
+export interface QueryGetVideoRenderingLogsRequest {
+  threadId: string;
+}
+
+/**
+ * QueryGetGameResponse is the response type for the Query/GetGame RPC
+ * method.
+ */
+export interface QueryGetVideoRenderingLogsResponse {
+  /** Game defines the game at the requested index. */
+  videoRenderingLogs?: VideoRenderingLogs | undefined;
+}
+
 export interface QueryGetPendingVideoRenderingTaskRequest {
 }
 
 export interface QueryGetPendingVideoRenderingTaskResponse {
   videoRenderingTasks: VideoRenderingTask[];
+}
+
+export interface QueryGetWorkerRequest {
+  worker: string;
+}
+
+export interface QueryGetWorkerResponse {
+  worker?: Worker | undefined;
 }
 
 function createBaseQueryGetVideoRenderingTaskRequest(): QueryGetVideoRenderingTaskRequest {
@@ -166,6 +190,136 @@ export const QueryGetVideoRenderingTaskResponse: MessageFns<QueryGetVideoRenderi
   },
 };
 
+function createBaseQueryGetVideoRenderingLogsRequest(): QueryGetVideoRenderingLogsRequest {
+  return { threadId: "" };
+}
+
+export const QueryGetVideoRenderingLogsRequest: MessageFns<QueryGetVideoRenderingLogsRequest> = {
+  encode(message: QueryGetVideoRenderingLogsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.threadId !== "") {
+      writer.uint32(10).string(message.threadId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetVideoRenderingLogsRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryGetVideoRenderingLogsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.threadId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryGetVideoRenderingLogsRequest {
+    return { threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "" };
+  },
+
+  toJSON(message: QueryGetVideoRenderingLogsRequest): unknown {
+    const obj: any = {};
+    if (message.threadId !== "") {
+      obj.threadId = message.threadId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<QueryGetVideoRenderingLogsRequest>, I>>(
+    base?: I,
+  ): QueryGetVideoRenderingLogsRequest {
+    return QueryGetVideoRenderingLogsRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<QueryGetVideoRenderingLogsRequest>, I>>(
+    object: I,
+  ): QueryGetVideoRenderingLogsRequest {
+    const message = createBaseQueryGetVideoRenderingLogsRequest();
+    message.threadId = object.threadId ?? "";
+    return message;
+  },
+};
+
+function createBaseQueryGetVideoRenderingLogsResponse(): QueryGetVideoRenderingLogsResponse {
+  return { videoRenderingLogs: undefined };
+}
+
+export const QueryGetVideoRenderingLogsResponse: MessageFns<QueryGetVideoRenderingLogsResponse> = {
+  encode(message: QueryGetVideoRenderingLogsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.videoRenderingLogs !== undefined) {
+      VideoRenderingLogs.encode(message.videoRenderingLogs, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetVideoRenderingLogsResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryGetVideoRenderingLogsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.videoRenderingLogs = VideoRenderingLogs.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryGetVideoRenderingLogsResponse {
+    return {
+      videoRenderingLogs: isSet(object.videoRenderingLogs)
+        ? VideoRenderingLogs.fromJSON(object.videoRenderingLogs)
+        : undefined,
+    };
+  },
+
+  toJSON(message: QueryGetVideoRenderingLogsResponse): unknown {
+    const obj: any = {};
+    if (message.videoRenderingLogs !== undefined) {
+      obj.videoRenderingLogs = VideoRenderingLogs.toJSON(message.videoRenderingLogs);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<QueryGetVideoRenderingLogsResponse>, I>>(
+    base?: I,
+  ): QueryGetVideoRenderingLogsResponse {
+    return QueryGetVideoRenderingLogsResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<QueryGetVideoRenderingLogsResponse>, I>>(
+    object: I,
+  ): QueryGetVideoRenderingLogsResponse {
+    const message = createBaseQueryGetVideoRenderingLogsResponse();
+    message.videoRenderingLogs = (object.videoRenderingLogs !== undefined && object.videoRenderingLogs !== null)
+      ? VideoRenderingLogs.fromPartial(object.videoRenderingLogs)
+      : undefined;
+    return message;
+  },
+};
+
 function createBaseQueryGetPendingVideoRenderingTaskRequest(): QueryGetPendingVideoRenderingTaskRequest {
   return {};
 }
@@ -279,10 +433,130 @@ export const QueryGetPendingVideoRenderingTaskResponse: MessageFns<QueryGetPendi
   },
 };
 
+function createBaseQueryGetWorkerRequest(): QueryGetWorkerRequest {
+  return { worker: "" };
+}
+
+export const QueryGetWorkerRequest: MessageFns<QueryGetWorkerRequest> = {
+  encode(message: QueryGetWorkerRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.worker !== "") {
+      writer.uint32(10).string(message.worker);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetWorkerRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryGetWorkerRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.worker = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryGetWorkerRequest {
+    return { worker: isSet(object.worker) ? globalThis.String(object.worker) : "" };
+  },
+
+  toJSON(message: QueryGetWorkerRequest): unknown {
+    const obj: any = {};
+    if (message.worker !== "") {
+      obj.worker = message.worker;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<QueryGetWorkerRequest>, I>>(base?: I): QueryGetWorkerRequest {
+    return QueryGetWorkerRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<QueryGetWorkerRequest>, I>>(object: I): QueryGetWorkerRequest {
+    const message = createBaseQueryGetWorkerRequest();
+    message.worker = object.worker ?? "";
+    return message;
+  },
+};
+
+function createBaseQueryGetWorkerResponse(): QueryGetWorkerResponse {
+  return { worker: undefined };
+}
+
+export const QueryGetWorkerResponse: MessageFns<QueryGetWorkerResponse> = {
+  encode(message: QueryGetWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.worker !== undefined) {
+      Worker.encode(message.worker, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetWorkerResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryGetWorkerResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.worker = Worker.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryGetWorkerResponse {
+    return { worker: isSet(object.worker) ? Worker.fromJSON(object.worker) : undefined };
+  },
+
+  toJSON(message: QueryGetWorkerResponse): unknown {
+    const obj: any = {};
+    if (message.worker !== undefined) {
+      obj.worker = Worker.toJSON(message.worker);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<QueryGetWorkerResponse>, I>>(base?: I): QueryGetWorkerResponse {
+    return QueryGetWorkerResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<QueryGetWorkerResponse>, I>>(object: I): QueryGetWorkerResponse {
+    const message = createBaseQueryGetWorkerResponse();
+    message.worker = (object.worker !== undefined && object.worker !== null)
+      ? Worker.fromPartial(object.worker)
+      : undefined;
+    return message;
+  },
+};
+
 /** Query defines the module Query service. */
 export interface Query {
-  /** GetGame returns the game at the requested index. */
+  /** GetVideoRenderingTask returns the task based on the taskId */
   GetVideoRenderingTask(request: QueryGetVideoRenderingTaskRequest): Promise<QueryGetVideoRenderingTaskResponse>;
+  GetVideoRenderingLogs(request: QueryGetVideoRenderingLogsRequest): Promise<QueryGetVideoRenderingLogsResponse>;
+  GetWorker(request: QueryGetWorkerRequest): Promise<QueryGetWorkerResponse>;
   GetPendingVideoRenderingTasks(
     request: QueryGetPendingVideoRenderingTaskRequest,
   ): Promise<QueryGetPendingVideoRenderingTaskResponse>;
@@ -296,12 +570,26 @@ export class QueryClientImpl implements Query {
     this.service = opts?.service || QueryServiceName;
     this.rpc = rpc;
     this.GetVideoRenderingTask = this.GetVideoRenderingTask.bind(this);
+    this.GetVideoRenderingLogs = this.GetVideoRenderingLogs.bind(this);
+    this.GetWorker = this.GetWorker.bind(this);
     this.GetPendingVideoRenderingTasks = this.GetPendingVideoRenderingTasks.bind(this);
   }
   GetVideoRenderingTask(request: QueryGetVideoRenderingTaskRequest): Promise<QueryGetVideoRenderingTaskResponse> {
     const data = QueryGetVideoRenderingTaskRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "GetVideoRenderingTask", data);
     return promise.then((data) => QueryGetVideoRenderingTaskResponse.decode(new BinaryReader(data)));
+  }
+
+  GetVideoRenderingLogs(request: QueryGetVideoRenderingLogsRequest): Promise<QueryGetVideoRenderingLogsResponse> {
+    const data = QueryGetVideoRenderingLogsRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "GetVideoRenderingLogs", data);
+    return promise.then((data) => QueryGetVideoRenderingLogsResponse.decode(new BinaryReader(data)));
+  }
+
+  GetWorker(request: QueryGetWorkerRequest): Promise<QueryGetWorkerResponse> {
+    const data = QueryGetWorkerRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, "GetWorker", data);
+    return promise.then((data) => QueryGetWorkerResponse.decode(new BinaryReader(data)));
   }
 
   GetPendingVideoRenderingTasks(

@@ -37,6 +37,7 @@ export interface Worker {
   enabled: boolean;
   currentTaskId: string;
   currentThreadIndex: number;
+  publicIp: string;
 }
 
 export interface Worker_Reputation {
@@ -80,13 +81,14 @@ export interface VideoRenderingThread {
 export interface VideoRenderingThread_Solution {
   proposedBy: string;
   hashes: string[];
-  files: string[];
+  files: string;
 }
 
 export interface VideoRenderingThread_Validation {
   validator: string;
   amountFiles: Long;
   valid: boolean;
+  isReverse: boolean;
 }
 
 /** Stores information about the Video Rendering  task */
@@ -98,6 +100,60 @@ export interface VideoRenderingTaskInfo {
 export interface IndexedVideoRenderingTask {
   index: string;
   videoRenderingTask?: VideoRenderingTask | undefined;
+}
+
+export interface VideoRenderingLogs {
+  threadId: string;
+  logs: VideoRenderingLogs_VideoRenderingLog[];
+}
+
+export interface VideoRenderingLogs_VideoRenderingLog {
+  log: string;
+  timestamp: Long;
+  severity: VideoRenderingLogs_VideoRenderingLog_SEVERITY;
+}
+
+export enum VideoRenderingLogs_VideoRenderingLog_SEVERITY {
+  INFO = 0,
+  SUCCESS = 1,
+  ERROR = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function videoRenderingLogs_VideoRenderingLog_SEVERITYFromJSON(
+  object: any,
+): VideoRenderingLogs_VideoRenderingLog_SEVERITY {
+  switch (object) {
+    case 0:
+    case "INFO":
+      return VideoRenderingLogs_VideoRenderingLog_SEVERITY.INFO;
+    case 1:
+    case "SUCCESS":
+      return VideoRenderingLogs_VideoRenderingLog_SEVERITY.SUCCESS;
+    case 2:
+    case "ERROR":
+      return VideoRenderingLogs_VideoRenderingLog_SEVERITY.ERROR;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return VideoRenderingLogs_VideoRenderingLog_SEVERITY.UNRECOGNIZED;
+  }
+}
+
+export function videoRenderingLogs_VideoRenderingLog_SEVERITYToJSON(
+  object: VideoRenderingLogs_VideoRenderingLog_SEVERITY,
+): string {
+  switch (object) {
+    case VideoRenderingLogs_VideoRenderingLog_SEVERITY.INFO:
+      return "INFO";
+    case VideoRenderingLogs_VideoRenderingLog_SEVERITY.SUCCESS:
+      return "SUCCESS";
+    case VideoRenderingLogs_VideoRenderingLog_SEVERITY.ERROR:
+      return "ERROR";
+    case VideoRenderingLogs_VideoRenderingLog_SEVERITY.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
 }
 
 function createBaseParams(): Params {
@@ -279,7 +335,7 @@ export const GenesisState: MessageFns<GenesisState> = {
 };
 
 function createBaseWorker(): Worker {
-  return { address: "", reputation: undefined, enabled: false, currentTaskId: "", currentThreadIndex: 0 };
+  return { address: "", reputation: undefined, enabled: false, currentTaskId: "", currentThreadIndex: 0, publicIp: "" };
 }
 
 export const Worker: MessageFns<Worker> = {
@@ -298,6 +354,9 @@ export const Worker: MessageFns<Worker> = {
     }
     if (message.currentThreadIndex !== 0) {
       writer.uint32(48).uint32(message.currentThreadIndex);
+    }
+    if (message.publicIp !== "") {
+      writer.uint32(58).string(message.publicIp);
     }
     return writer;
   },
@@ -349,6 +408,14 @@ export const Worker: MessageFns<Worker> = {
           message.currentThreadIndex = reader.uint32();
           continue;
         }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.publicIp = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -365,6 +432,7 @@ export const Worker: MessageFns<Worker> = {
       enabled: isSet(object.enabled) ? globalThis.Boolean(object.enabled) : false,
       currentTaskId: isSet(object.currentTaskId) ? globalThis.String(object.currentTaskId) : "",
       currentThreadIndex: isSet(object.currentThreadIndex) ? globalThis.Number(object.currentThreadIndex) : 0,
+      publicIp: isSet(object.publicIp) ? globalThis.String(object.publicIp) : "",
     };
   },
 
@@ -385,6 +453,9 @@ export const Worker: MessageFns<Worker> = {
     if (message.currentThreadIndex !== 0) {
       obj.currentThreadIndex = Math.round(message.currentThreadIndex);
     }
+    if (message.publicIp !== "") {
+      obj.publicIp = message.publicIp;
+    }
     return obj;
   },
 
@@ -400,6 +471,7 @@ export const Worker: MessageFns<Worker> = {
     message.enabled = object.enabled ?? false;
     message.currentTaskId = object.currentTaskId ?? "";
     message.currentThreadIndex = object.currentThreadIndex ?? 0;
+    message.publicIp = object.publicIp ?? "";
     return message;
   },
 };
@@ -904,7 +976,7 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
 };
 
 function createBaseVideoRenderingThread_Solution(): VideoRenderingThread_Solution {
-  return { proposedBy: "", hashes: [], files: [] };
+  return { proposedBy: "", hashes: [], files: "" };
 }
 
 export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solution> = {
@@ -915,8 +987,8 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
     for (const v of message.hashes) {
       writer.uint32(18).string(v!);
     }
-    for (const v of message.files) {
-      writer.uint32(26).string(v!);
+    if (message.files !== "") {
+      writer.uint32(26).string(message.files);
     }
     return writer;
   },
@@ -949,7 +1021,7 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
             break;
           }
 
-          message.files.push(reader.string());
+          message.files = reader.string();
           continue;
         }
       }
@@ -965,7 +1037,7 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
     return {
       proposedBy: isSet(object.proposedBy) ? globalThis.String(object.proposedBy) : "",
       hashes: globalThis.Array.isArray(object?.hashes) ? object.hashes.map((e: any) => globalThis.String(e)) : [],
-      files: globalThis.Array.isArray(object?.files) ? object.files.map((e: any) => globalThis.String(e)) : [],
+      files: isSet(object.files) ? globalThis.String(object.files) : "",
     };
   },
 
@@ -977,7 +1049,7 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
     if (message.hashes?.length) {
       obj.hashes = message.hashes;
     }
-    if (message.files?.length) {
+    if (message.files !== "") {
       obj.files = message.files;
     }
     return obj;
@@ -992,13 +1064,13 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
     const message = createBaseVideoRenderingThread_Solution();
     message.proposedBy = object.proposedBy ?? "";
     message.hashes = object.hashes?.map((e) => e) || [];
-    message.files = object.files?.map((e) => e) || [];
+    message.files = object.files ?? "";
     return message;
   },
 };
 
 function createBaseVideoRenderingThread_Validation(): VideoRenderingThread_Validation {
-  return { validator: "", amountFiles: Long.UZERO, valid: false };
+  return { validator: "", amountFiles: Long.UZERO, valid: false, isReverse: false };
 }
 
 export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Validation> = {
@@ -1011,6 +1083,9 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
     }
     if (message.valid !== false) {
       writer.uint32(24).bool(message.valid);
+    }
+    if (message.isReverse !== false) {
+      writer.uint32(32).bool(message.isReverse);
     }
     return writer;
   },
@@ -1046,6 +1121,14 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
           message.valid = reader.bool();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.isReverse = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1060,6 +1143,7 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
       validator: isSet(object.validator) ? globalThis.String(object.validator) : "",
       amountFiles: isSet(object.amountFiles) ? Long.fromValue(object.amountFiles) : Long.UZERO,
       valid: isSet(object.valid) ? globalThis.Boolean(object.valid) : false,
+      isReverse: isSet(object.isReverse) ? globalThis.Boolean(object.isReverse) : false,
     };
   },
 
@@ -1073,6 +1157,9 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
     }
     if (message.valid !== false) {
       obj.valid = message.valid;
+    }
+    if (message.isReverse !== false) {
+      obj.isReverse = message.isReverse;
     }
     return obj;
   },
@@ -1089,6 +1176,7 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
       ? Long.fromValue(object.amountFiles)
       : Long.UZERO;
     message.valid = object.valid ?? false;
+    message.isReverse = object.isReverse ?? false;
     return message;
   },
 };
@@ -1229,6 +1317,182 @@ export const IndexedVideoRenderingTask: MessageFns<IndexedVideoRenderingTask> = 
     message.videoRenderingTask = (object.videoRenderingTask !== undefined && object.videoRenderingTask !== null)
       ? VideoRenderingTask.fromPartial(object.videoRenderingTask)
       : undefined;
+    return message;
+  },
+};
+
+function createBaseVideoRenderingLogs(): VideoRenderingLogs {
+  return { threadId: "", logs: [] };
+}
+
+export const VideoRenderingLogs: MessageFns<VideoRenderingLogs> = {
+  encode(message: VideoRenderingLogs, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.threadId !== "") {
+      writer.uint32(10).string(message.threadId);
+    }
+    for (const v of message.logs) {
+      VideoRenderingLogs_VideoRenderingLog.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingLogs {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVideoRenderingLogs();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.threadId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.logs.push(VideoRenderingLogs_VideoRenderingLog.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VideoRenderingLogs {
+    return {
+      threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
+      logs: globalThis.Array.isArray(object?.logs)
+        ? object.logs.map((e: any) => VideoRenderingLogs_VideoRenderingLog.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: VideoRenderingLogs): unknown {
+    const obj: any = {};
+    if (message.threadId !== "") {
+      obj.threadId = message.threadId;
+    }
+    if (message.logs?.length) {
+      obj.logs = message.logs.map((e) => VideoRenderingLogs_VideoRenderingLog.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VideoRenderingLogs>, I>>(base?: I): VideoRenderingLogs {
+    return VideoRenderingLogs.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VideoRenderingLogs>, I>>(object: I): VideoRenderingLogs {
+    const message = createBaseVideoRenderingLogs();
+    message.threadId = object.threadId ?? "";
+    message.logs = object.logs?.map((e) => VideoRenderingLogs_VideoRenderingLog.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseVideoRenderingLogs_VideoRenderingLog(): VideoRenderingLogs_VideoRenderingLog {
+  return { log: "", timestamp: Long.ZERO, severity: 0 };
+}
+
+export const VideoRenderingLogs_VideoRenderingLog: MessageFns<VideoRenderingLogs_VideoRenderingLog> = {
+  encode(message: VideoRenderingLogs_VideoRenderingLog, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.log !== "") {
+      writer.uint32(18).string(message.log);
+    }
+    if (!message.timestamp.equals(Long.ZERO)) {
+      writer.uint32(24).int64(message.timestamp.toString());
+    }
+    if (message.severity !== 0) {
+      writer.uint32(32).int32(message.severity);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingLogs_VideoRenderingLog {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVideoRenderingLogs_VideoRenderingLog();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.log = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.timestamp = Long.fromString(reader.int64().toString());
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.severity = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VideoRenderingLogs_VideoRenderingLog {
+    return {
+      log: isSet(object.log) ? globalThis.String(object.log) : "",
+      timestamp: isSet(object.timestamp) ? Long.fromValue(object.timestamp) : Long.ZERO,
+      severity: isSet(object.severity) ? videoRenderingLogs_VideoRenderingLog_SEVERITYFromJSON(object.severity) : 0,
+    };
+  },
+
+  toJSON(message: VideoRenderingLogs_VideoRenderingLog): unknown {
+    const obj: any = {};
+    if (message.log !== "") {
+      obj.log = message.log;
+    }
+    if (!message.timestamp.equals(Long.ZERO)) {
+      obj.timestamp = (message.timestamp || Long.ZERO).toString();
+    }
+    if (message.severity !== 0) {
+      obj.severity = videoRenderingLogs_VideoRenderingLog_SEVERITYToJSON(message.severity);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VideoRenderingLogs_VideoRenderingLog>, I>>(
+    base?: I,
+  ): VideoRenderingLogs_VideoRenderingLog {
+    return VideoRenderingLogs_VideoRenderingLog.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VideoRenderingLogs_VideoRenderingLog>, I>>(
+    object: I,
+  ): VideoRenderingLogs_VideoRenderingLog {
+    const message = createBaseVideoRenderingLogs_VideoRenderingLog();
+    message.log = object.log ?? "";
+    message.timestamp = (object.timestamp !== undefined && object.timestamp !== null)
+      ? Long.fromValue(object.timestamp)
+      : Long.ZERO;
+    message.severity = object.severity ?? 0;
     return message;
   },
 };

@@ -5,7 +5,7 @@
 // source: janction/videoRendering/v1/tx.proto
 
 /* eslint-disable */
-import _m0 from "protobufjs/minimal";
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import Long from "long";
 
 export const protobufPackage = "janction.videoRendering.v1";
@@ -28,6 +28,7 @@ export interface MsgCreateVideoRenderingTaskResponse {
 
 export interface MsgAddWorker {
   creator: string;
+  publicIp: string;
 }
 
 export interface MsgAddWorkerResponse {
@@ -72,7 +73,7 @@ export interface MsgSubmitSolution {
   creator: string;
   taskId: string;
   threadId: string;
-  files: string[];
+  cid: string;
 }
 
 export interface MsgSubmitSolutionResponse {
@@ -83,7 +84,7 @@ function createBaseMsgCreateVideoRenderingTask(): MsgCreateVideoRenderingTask {
 }
 
 export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask> = {
-  encode(message: MsgCreateVideoRenderingTask, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(message: MsgCreateVideoRenderingTask, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -105,8 +106,8 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgCreateVideoRenderingTask {
-    const reader = input instanceof _m0.Reader  ? input :  new _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateVideoRenderingTask {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgCreateVideoRenderingTask();
     while (reader.pos < end) {
@@ -225,16 +226,15 @@ function createBaseMsgCreateVideoRenderingTaskResponse(): MsgCreateVideoRenderin
 }
 
 export const MsgCreateVideoRenderingTaskResponse: MessageFns<MsgCreateVideoRenderingTaskResponse> = {
-  encode(message: MsgCreateVideoRenderingTaskResponse, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: MsgCreateVideoRenderingTaskResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.taskId !== "") {
       writer.uint32(10).string(message.taskId);
     }
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgCreateVideoRenderingTaskResponse {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateVideoRenderingTaskResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgCreateVideoRenderingTaskResponse();
     while (reader.pos < end) {
@@ -284,20 +284,22 @@ export const MsgCreateVideoRenderingTaskResponse: MessageFns<MsgCreateVideoRende
 };
 
 function createBaseMsgAddWorker(): MsgAddWorker {
-  return { creator: "" };
+  return { creator: "", publicIp: "" };
 }
 
 export const MsgAddWorker: MessageFns<MsgAddWorker> = {
-  encode(message: MsgAddWorker, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: MsgAddWorker, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
+    }
+    if (message.publicIp !== "") {
+      writer.uint32(18).string(message.publicIp);
     }
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgAddWorker {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgAddWorker {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgAddWorker();
     while (reader.pos < end) {
@@ -311,6 +313,14 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
           message.creator = reader.string();
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.publicIp = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -321,13 +331,19 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
   },
 
   fromJSON(object: any): MsgAddWorker {
-    return { creator: isSet(object.creator) ? globalThis.String(object.creator) : "" };
+    return {
+      creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
+      publicIp: isSet(object.publicIp) ? globalThis.String(object.publicIp) : "",
+    };
   },
 
   toJSON(message: MsgAddWorker): unknown {
     const obj: any = {};
     if (message.creator !== "") {
       obj.creator = message.creator;
+    }
+    if (message.publicIp !== "") {
+      obj.publicIp = message.publicIp;
     }
     return obj;
   },
@@ -338,6 +354,7 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
   fromPartial<I extends Exact<DeepPartial<MsgAddWorker>, I>>(object: I): MsgAddWorker {
     const message = createBaseMsgAddWorker();
     message.creator = object.creator ?? "";
+    message.publicIp = object.publicIp ?? "";
     return message;
   },
 };
@@ -347,13 +364,12 @@ function createBaseMsgAddWorkerResponse(): MsgAddWorkerResponse {
 }
 
 export const MsgAddWorkerResponse: MessageFns<MsgAddWorkerResponse> = {
-  encode(_: MsgAddWorkerResponse, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(_: MsgAddWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgAddWorkerResponse {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgAddWorkerResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgAddWorkerResponse();
     while (reader.pos < end) {
@@ -391,8 +407,7 @@ function createBaseMsgSubscribeWorkerToTask(): MsgSubscribeWorkerToTask {
 }
 
 export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
-  encode(message: MsgSubscribeWorkerToTask, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: MsgSubscribeWorkerToTask, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.address !== "") {
       writer.uint32(10).string(message.address);
     }
@@ -402,8 +417,8 @@ export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgSubscribeWorkerToTask {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgSubscribeWorkerToTask {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSubscribeWorkerToTask();
     while (reader.pos < end) {
@@ -468,16 +483,15 @@ function createBaseMsgSubscribeWorkerToTaskResponse(): MsgSubscribeWorkerToTaskR
 }
 
 export const MsgSubscribeWorkerToTaskResponse: MessageFns<MsgSubscribeWorkerToTaskResponse> = {
-  encode(message: MsgSubscribeWorkerToTaskResponse, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: MsgSubscribeWorkerToTaskResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.threadId !== "") {
       writer.uint32(10).string(message.threadId);
     }
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgSubscribeWorkerToTaskResponse {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgSubscribeWorkerToTaskResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSubscribeWorkerToTaskResponse();
     while (reader.pos < end) {
@@ -531,8 +545,7 @@ function createBaseMsgProposeSolution(): MsgProposeSolution {
 }
 
 export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
-  encode(message: MsgProposeSolution, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: MsgProposeSolution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -548,8 +561,8 @@ export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgProposeSolution {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgProposeSolution {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgProposeSolution();
     while (reader.pos < end) {
@@ -640,13 +653,12 @@ function createBaseMsgProposeSolutionResponse(): MsgProposeSolutionResponse {
 }
 
 export const MsgProposeSolutionResponse: MessageFns<MsgProposeSolutionResponse> = {
-  encode(_: MsgProposeSolutionResponse, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(_: MsgProposeSolutionResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgProposeSolutionResponse {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgProposeSolutionResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgProposeSolutionResponse();
     while (reader.pos < end) {
@@ -684,8 +696,7 @@ function createBaseMsgSubmitValidation(): MsgSubmitValidation {
 }
 
 export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
-  encode(message: MsgSubmitValidation, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: MsgSubmitValidation, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -704,8 +715,8 @@ export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgSubmitValidation {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgSubmitValidation {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSubmitValidation();
     while (reader.pos < end) {
@@ -811,13 +822,12 @@ function createBaseMsgSubmitValidationResponse(): MsgSubmitValidationResponse {
 }
 
 export const MsgSubmitValidationResponse: MessageFns<MsgSubmitValidationResponse> = {
-  encode(_: MsgSubmitValidationResponse, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(_: MsgSubmitValidationResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgSubmitValidationResponse {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgSubmitValidationResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSubmitValidationResponse();
     while (reader.pos < end) {
@@ -851,12 +861,11 @@ export const MsgSubmitValidationResponse: MessageFns<MsgSubmitValidationResponse
 };
 
 function createBaseMsgSubmitSolution(): MsgSubmitSolution {
-  return { creator: "", taskId: "", threadId: "", files: [] };
+  return { creator: "", taskId: "", threadId: "", cid: "" };
 }
 
 export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
-  encode(message: MsgSubmitSolution, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: MsgSubmitSolution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -866,14 +875,14 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     if (message.threadId !== "") {
       writer.uint32(26).string(message.threadId);
     }
-    for (const v of message.files) {
-      writer.uint32(34).string(v!);
+    if (message.cid !== "") {
+      writer.uint32(34).string(message.cid);
     }
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgSubmitSolution {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgSubmitSolution {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSubmitSolution();
     while (reader.pos < end) {
@@ -908,7 +917,7 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
             break;
           }
 
-          message.files.push(reader.string());
+          message.cid = reader.string();
           continue;
         }
       }
@@ -925,7 +934,7 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
       threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
-      files: globalThis.Array.isArray(object?.files) ? object.files.map((e: any) => globalThis.String(e)) : [],
+      cid: isSet(object.cid) ? globalThis.String(object.cid) : "",
     };
   },
 
@@ -940,8 +949,8 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     if (message.threadId !== "") {
       obj.threadId = message.threadId;
     }
-    if (message.files?.length) {
-      obj.files = message.files;
+    if (message.cid !== "") {
+      obj.cid = message.cid;
     }
     return obj;
   },
@@ -954,7 +963,7 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     message.creator = object.creator ?? "";
     message.taskId = object.taskId ?? "";
     message.threadId = object.threadId ?? "";
-    message.files = object.files?.map((e) => e) || [];
+    message.cid = object.cid ?? "";
     return message;
   },
 };
@@ -964,13 +973,12 @@ function createBaseMsgSubmitSolutionResponse(): MsgSubmitSolutionResponse {
 }
 
 export const MsgSubmitSolutionResponse: MessageFns<MsgSubmitSolutionResponse> = {
-  encode(_: MsgSubmitSolutionResponse, writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(_: MsgSubmitSolutionResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
-  decode(input:  _m0.Reader | Uint8Array, length?: number): MsgSubmitSolutionResponse {
-    const reader = input instanceof  _m0.Reader ? input : new  _m0.Reader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgSubmitSolutionResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSubmitSolutionResponse();
     while (reader.pos < end) {
@@ -1035,37 +1043,37 @@ export class MsgClientImpl implements Msg {
   CreateVideoRenderingTask(request: MsgCreateVideoRenderingTask): Promise<MsgCreateVideoRenderingTaskResponse> {
     const data = MsgCreateVideoRenderingTask.encode(request).finish();
     const promise = this.rpc.request(this.service, "CreateVideoRenderingTask", data);
-    return promise.then((data) => MsgCreateVideoRenderingTaskResponse.decode(new  _m0.Reader(data)));
+    return promise.then((data) => MsgCreateVideoRenderingTaskResponse.decode(new BinaryReader(data)));
   }
 
   AddWorker(request: MsgAddWorker): Promise<MsgAddWorkerResponse> {
     const data = MsgAddWorker.encode(request).finish();
     const promise = this.rpc.request(this.service, "AddWorker", data);
-    return promise.then((data) => MsgAddWorkerResponse.decode(new  _m0.Reader(data)));
+    return promise.then((data) => MsgAddWorkerResponse.decode(new BinaryReader(data)));
   }
 
   SubscribeWorkerToTask(request: MsgSubscribeWorkerToTask): Promise<MsgSubscribeWorkerToTaskResponse> {
     const data = MsgSubscribeWorkerToTask.encode(request).finish();
     const promise = this.rpc.request(this.service, "SubscribeWorkerToTask", data);
-    return promise.then((data) => MsgSubscribeWorkerToTaskResponse.decode(new  _m0.Reader(data)));
+    return promise.then((data) => MsgSubscribeWorkerToTaskResponse.decode(new BinaryReader(data)));
   }
 
   ProposeSolution(request: MsgProposeSolution): Promise<MsgProposeSolutionResponse> {
     const data = MsgProposeSolution.encode(request).finish();
     const promise = this.rpc.request(this.service, "ProposeSolution", data);
-    return promise.then((data) => MsgProposeSolutionResponse.decode(new  _m0.Reader(data)));
+    return promise.then((data) => MsgProposeSolutionResponse.decode(new BinaryReader(data)));
   }
 
   SubmitValidation(request: MsgSubmitValidation): Promise<MsgSubmitValidationResponse> {
     const data = MsgSubmitValidation.encode(request).finish();
     const promise = this.rpc.request(this.service, "SubmitValidation", data);
-    return promise.then((data) => MsgSubmitValidationResponse.decode(new  _m0.Reader(data)));
+    return promise.then((data) => MsgSubmitValidationResponse.decode(new BinaryReader(data)));
   }
 
   SubmitSolution(request: MsgSubmitSolution): Promise<MsgSubmitSolutionResponse> {
     const data = MsgSubmitSolution.encode(request).finish();
     const promise = this.rpc.request(this.service, "SubmitSolution", data);
-    return promise.then((data) => MsgSubmitSolutionResponse.decode(new  _m0.Reader(data)));
+    return promise.then((data) => MsgSubmitSolutionResponse.decode(new BinaryReader(data)));
   }
 }
 
@@ -1090,8 +1098,8 @@ function isSet(value: any): boolean {
 }
 
 export interface MessageFns<T> {
-  encode(message: T, writer?: _m0.Writer): _m0.Writer;
-  decode(input:  _m0.Reader | Uint8Array, length?: number): T;
+  encode(message: T, writer?: BinaryWriter): BinaryWriter;
+  decode(input: BinaryReader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
   toJSON(message: T): unknown;
   create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;

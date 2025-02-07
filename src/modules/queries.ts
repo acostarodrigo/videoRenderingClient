@@ -7,7 +7,7 @@ export interface VideoRenderingExtension{
     readonly videoRendering: {
         readonly GetVideoRenderingTask :(
             index: string
-         )=> Promise<VideoRenderingTask>
+         )=> Promise<VideoRenderingTask | undefined>
     }
 }
 
