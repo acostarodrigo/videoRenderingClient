@@ -7,12 +7,15 @@
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import Long from "long";
+import { Coin } from "../../../cosmos/base/v1beta1/coin";
 
 export const protobufPackage = "janction.videoRendering.v1";
 
 /** Params defines the parameters of the module. */
 export interface Params {
-  videoRenderingKeyName: string;
+  minWorkerStaking?: Coin | undefined;
+  maxWorkersPerThread: Long;
+  minValidators: Long;
 }
 
 /** GenesisState is the state that must be provided at genesis. */
@@ -38,13 +41,15 @@ export interface Worker {
   currentTaskId: string;
   currentThreadIndex: number;
   publicIp: string;
+  ipfsId: string;
 }
 
 export interface Worker_Reputation {
-  stacked: Long;
+  staked?: Coin | undefined;
   points: Long;
   validations: number;
   solutions: number;
+  winnings?: Coin | undefined;
 }
 
 /**
@@ -59,7 +64,7 @@ export interface VideoRenderingTask {
   endFrame: number;
   threadAmount: number;
   completed: boolean;
-  reward: Long;
+  reward?: Coin | undefined;
   threads: VideoRenderingThread[];
 }
 
@@ -157,13 +162,19 @@ export function videoRenderingLogs_VideoRenderingLog_SEVERITYToJSON(
 }
 
 function createBaseParams(): Params {
-  return { videoRenderingKeyName: "" };
+  return { minWorkerStaking: undefined, maxWorkersPerThread: Long.UZERO, minValidators: Long.UZERO };
 }
 
 export const Params: MessageFns<Params> = {
   encode(message: Params, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.videoRenderingKeyName !== "") {
-      writer.uint32(10).string(message.videoRenderingKeyName);
+    if (message.minWorkerStaking !== undefined) {
+      Coin.encode(message.minWorkerStaking, writer.uint32(10).fork()).join();
+    }
+    if (!message.maxWorkersPerThread.equals(Long.UZERO)) {
+      writer.uint32(16).uint64(message.maxWorkersPerThread.toString());
+    }
+    if (!message.minValidators.equals(Long.UZERO)) {
+      writer.uint32(24).uint64(message.minValidators.toString());
     }
     return writer;
   },
@@ -180,7 +191,23 @@ export const Params: MessageFns<Params> = {
             break;
           }
 
-          message.videoRenderingKeyName = reader.string();
+          message.minWorkerStaking = Coin.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.maxWorkersPerThread = Long.fromString(reader.uint64().toString(), true);
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.minValidators = Long.fromString(reader.uint64().toString(), true);
           continue;
         }
       }
@@ -194,14 +221,22 @@ export const Params: MessageFns<Params> = {
 
   fromJSON(object: any): Params {
     return {
-      videoRenderingKeyName: isSet(object.videoRenderingKeyName) ? globalThis.String(object.videoRenderingKeyName) : "",
+      minWorkerStaking: isSet(object.minWorkerStaking) ? Coin.fromJSON(object.minWorkerStaking) : undefined,
+      maxWorkersPerThread: isSet(object.maxWorkersPerThread) ? Long.fromValue(object.maxWorkersPerThread) : Long.UZERO,
+      minValidators: isSet(object.minValidators) ? Long.fromValue(object.minValidators) : Long.UZERO,
     };
   },
 
   toJSON(message: Params): unknown {
     const obj: any = {};
-    if (message.videoRenderingKeyName !== "") {
-      obj.videoRenderingKeyName = message.videoRenderingKeyName;
+    if (message.minWorkerStaking !== undefined) {
+      obj.minWorkerStaking = Coin.toJSON(message.minWorkerStaking);
+    }
+    if (!message.maxWorkersPerThread.equals(Long.UZERO)) {
+      obj.maxWorkersPerThread = (message.maxWorkersPerThread || Long.UZERO).toString();
+    }
+    if (!message.minValidators.equals(Long.UZERO)) {
+      obj.minValidators = (message.minValidators || Long.UZERO).toString();
     }
     return obj;
   },
@@ -211,7 +246,15 @@ export const Params: MessageFns<Params> = {
   },
   fromPartial<I extends Exact<DeepPartial<Params>, I>>(object: I): Params {
     const message = createBaseParams();
-    message.videoRenderingKeyName = object.videoRenderingKeyName ?? "";
+    message.minWorkerStaking = (object.minWorkerStaking !== undefined && object.minWorkerStaking !== null)
+      ? Coin.fromPartial(object.minWorkerStaking)
+      : undefined;
+    message.maxWorkersPerThread = (object.maxWorkersPerThread !== undefined && object.maxWorkersPerThread !== null)
+      ? Long.fromValue(object.maxWorkersPerThread)
+      : Long.UZERO;
+    message.minValidators = (object.minValidators !== undefined && object.minValidators !== null)
+      ? Long.fromValue(object.minValidators)
+      : Long.UZERO;
     return message;
   },
 };
@@ -335,7 +378,15 @@ export const GenesisState: MessageFns<GenesisState> = {
 };
 
 function createBaseWorker(): Worker {
-  return { address: "", reputation: undefined, enabled: false, currentTaskId: "", currentThreadIndex: 0, publicIp: "" };
+  return {
+    address: "",
+    reputation: undefined,
+    enabled: false,
+    currentTaskId: "",
+    currentThreadIndex: 0,
+    publicIp: "",
+    ipfsId: "",
+  };
 }
 
 export const Worker: MessageFns<Worker> = {
@@ -357,6 +408,9 @@ export const Worker: MessageFns<Worker> = {
     }
     if (message.publicIp !== "") {
       writer.uint32(58).string(message.publicIp);
+    }
+    if (message.ipfsId !== "") {
+      writer.uint32(66).string(message.ipfsId);
     }
     return writer;
   },
@@ -416,6 +470,14 @@ export const Worker: MessageFns<Worker> = {
           message.publicIp = reader.string();
           continue;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.ipfsId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -433,6 +495,7 @@ export const Worker: MessageFns<Worker> = {
       currentTaskId: isSet(object.currentTaskId) ? globalThis.String(object.currentTaskId) : "",
       currentThreadIndex: isSet(object.currentThreadIndex) ? globalThis.Number(object.currentThreadIndex) : 0,
       publicIp: isSet(object.publicIp) ? globalThis.String(object.publicIp) : "",
+      ipfsId: isSet(object.ipfsId) ? globalThis.String(object.ipfsId) : "",
     };
   },
 
@@ -456,6 +519,9 @@ export const Worker: MessageFns<Worker> = {
     if (message.publicIp !== "") {
       obj.publicIp = message.publicIp;
     }
+    if (message.ipfsId !== "") {
+      obj.ipfsId = message.ipfsId;
+    }
     return obj;
   },
 
@@ -472,18 +538,19 @@ export const Worker: MessageFns<Worker> = {
     message.currentTaskId = object.currentTaskId ?? "";
     message.currentThreadIndex = object.currentThreadIndex ?? 0;
     message.publicIp = object.publicIp ?? "";
+    message.ipfsId = object.ipfsId ?? "";
     return message;
   },
 };
 
 function createBaseWorker_Reputation(): Worker_Reputation {
-  return { stacked: Long.UZERO, points: Long.ZERO, validations: 0, solutions: 0 };
+  return { staked: undefined, points: Long.ZERO, validations: 0, solutions: 0, winnings: undefined };
 }
 
 export const Worker_Reputation: MessageFns<Worker_Reputation> = {
   encode(message: Worker_Reputation, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (!message.stacked.equals(Long.UZERO)) {
-      writer.uint32(8).uint64(message.stacked.toString());
+    if (message.staked !== undefined) {
+      Coin.encode(message.staked, writer.uint32(10).fork()).join();
     }
     if (!message.points.equals(Long.ZERO)) {
       writer.uint32(16).int64(message.points.toString());
@@ -493,6 +560,9 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
     }
     if (message.solutions !== 0) {
       writer.uint32(32).uint32(message.solutions);
+    }
+    if (message.winnings !== undefined) {
+      Coin.encode(message.winnings, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -505,11 +575,11 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.stacked = Long.fromString(reader.uint64().toString(), true);
+          message.staked = Coin.decode(reader, reader.uint32());
           continue;
         }
         case 2: {
@@ -536,6 +606,14 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
           message.solutions = reader.uint32();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.winnings = Coin.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -547,17 +625,18 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
 
   fromJSON(object: any): Worker_Reputation {
     return {
-      stacked: isSet(object.stacked) ? Long.fromValue(object.stacked) : Long.UZERO,
+      staked: isSet(object.staked) ? Coin.fromJSON(object.staked) : undefined,
       points: isSet(object.points) ? Long.fromValue(object.points) : Long.ZERO,
       validations: isSet(object.validations) ? globalThis.Number(object.validations) : 0,
       solutions: isSet(object.solutions) ? globalThis.Number(object.solutions) : 0,
+      winnings: isSet(object.winnings) ? Coin.fromJSON(object.winnings) : undefined,
     };
   },
 
   toJSON(message: Worker_Reputation): unknown {
     const obj: any = {};
-    if (!message.stacked.equals(Long.UZERO)) {
-      obj.stacked = (message.stacked || Long.UZERO).toString();
+    if (message.staked !== undefined) {
+      obj.staked = Coin.toJSON(message.staked);
     }
     if (!message.points.equals(Long.ZERO)) {
       obj.points = (message.points || Long.ZERO).toString();
@@ -568,6 +647,9 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
     if (message.solutions !== 0) {
       obj.solutions = Math.round(message.solutions);
     }
+    if (message.winnings !== undefined) {
+      obj.winnings = Coin.toJSON(message.winnings);
+    }
     return obj;
   },
 
@@ -576,14 +658,17 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
   },
   fromPartial<I extends Exact<DeepPartial<Worker_Reputation>, I>>(object: I): Worker_Reputation {
     const message = createBaseWorker_Reputation();
-    message.stacked = (object.stacked !== undefined && object.stacked !== null)
-      ? Long.fromValue(object.stacked)
-      : Long.UZERO;
+    message.staked = (object.staked !== undefined && object.staked !== null)
+      ? Coin.fromPartial(object.staked)
+      : undefined;
     message.points = (object.points !== undefined && object.points !== null)
       ? Long.fromValue(object.points)
       : Long.ZERO;
     message.validations = object.validations ?? 0;
     message.solutions = object.solutions ?? 0;
+    message.winnings = (object.winnings !== undefined && object.winnings !== null)
+      ? Coin.fromPartial(object.winnings)
+      : undefined;
     return message;
   },
 };
@@ -597,7 +682,7 @@ function createBaseVideoRenderingTask(): VideoRenderingTask {
     endFrame: 0,
     threadAmount: 0,
     completed: false,
-    reward: Long.UZERO,
+    reward: undefined,
     threads: [],
   };
 }
@@ -625,8 +710,8 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
     if (message.completed !== false) {
       writer.uint32(56).bool(message.completed);
     }
-    if (!message.reward.equals(Long.UZERO)) {
-      writer.uint32(64).uint64(message.reward.toString());
+    if (message.reward !== undefined) {
+      Coin.encode(message.reward, writer.uint32(66).fork()).join();
     }
     for (const v of message.threads) {
       VideoRenderingThread.encode(v!, writer.uint32(74).fork()).join();
@@ -698,11 +783,11 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
           continue;
         }
         case 8: {
-          if (tag !== 64) {
+          if (tag !== 66) {
             break;
           }
 
-          message.reward = Long.fromString(reader.uint64().toString(), true);
+          message.reward = Coin.decode(reader, reader.uint32());
           continue;
         }
         case 9: {
@@ -731,7 +816,7 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
       endFrame: isSet(object.endFrame) ? globalThis.Number(object.endFrame) : 0,
       threadAmount: isSet(object.threadAmount) ? globalThis.Number(object.threadAmount) : 0,
       completed: isSet(object.completed) ? globalThis.Boolean(object.completed) : false,
-      reward: isSet(object.reward) ? Long.fromValue(object.reward) : Long.UZERO,
+      reward: isSet(object.reward) ? Coin.fromJSON(object.reward) : undefined,
       threads: globalThis.Array.isArray(object?.threads)
         ? object.threads.map((e: any) => VideoRenderingThread.fromJSON(e))
         : [],
@@ -761,8 +846,8 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
     if (message.completed !== false) {
       obj.completed = message.completed;
     }
-    if (!message.reward.equals(Long.UZERO)) {
-      obj.reward = (message.reward || Long.UZERO).toString();
+    if (message.reward !== undefined) {
+      obj.reward = Coin.toJSON(message.reward);
     }
     if (message.threads?.length) {
       obj.threads = message.threads.map((e) => VideoRenderingThread.toJSON(e));
@@ -783,8 +868,8 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
     message.threadAmount = object.threadAmount ?? 0;
     message.completed = object.completed ?? false;
     message.reward = (object.reward !== undefined && object.reward !== null)
-      ? Long.fromValue(object.reward)
-      : Long.UZERO;
+      ? Coin.fromPartial(object.reward)
+      : undefined;
     message.threads = object.threads?.map((e) => VideoRenderingThread.fromPartial(e)) || [];
     return message;
   },

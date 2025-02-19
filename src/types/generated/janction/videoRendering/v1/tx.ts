@@ -7,6 +7,7 @@
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 import Long from "long";
+import { Coin } from "../../../cosmos/base/v1beta1/coin";
 
 export const protobufPackage = "janction.videoRendering.v1";
 
@@ -18,7 +19,7 @@ export interface MsgCreateVideoRenderingTask {
   startFrame: number;
   endFrame: number;
   threads: number;
-  reward: Long;
+  reward?: Coin | undefined;
 }
 
 /** MsgCreateGameResponse defines the Msg/CreateGame response type. */
@@ -29,9 +30,13 @@ export interface MsgCreateVideoRenderingTaskResponse {
 export interface MsgAddWorker {
   creator: string;
   publicIp: string;
+  ipfsId: string;
+  stake?: Coin | undefined;
 }
 
 export interface MsgAddWorkerResponse {
+  ok: boolean;
+  message: string;
 }
 
 export interface MsgSubscribeWorkerToTask {
@@ -80,7 +85,7 @@ export interface MsgSubmitSolutionResponse {
 }
 
 function createBaseMsgCreateVideoRenderingTask(): MsgCreateVideoRenderingTask {
-  return { creator: "", cid: "", startFrame: 0, endFrame: 0, threads: 0, reward: Long.UZERO };
+  return { creator: "", cid: "", startFrame: 0, endFrame: 0, threads: 0, reward: undefined };
 }
 
 export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask> = {
@@ -100,8 +105,8 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
     if (message.threads !== 0) {
       writer.uint32(40).uint32(message.threads);
     }
-    if (!message.reward.equals(Long.UZERO)) {
-      writer.uint32(48).uint64(message.reward.toString());
+    if (message.reward !== undefined) {
+      Coin.encode(message.reward, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -154,11 +159,11 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
           continue;
         }
         case 6: {
-          if (tag !== 48) {
+          if (tag !== 50) {
             break;
           }
 
-          message.reward = Long.fromString(reader.uint64().toString(), true);
+          message.reward = Coin.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -177,7 +182,7 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
       startFrame: isSet(object.startFrame) ? globalThis.Number(object.startFrame) : 0,
       endFrame: isSet(object.endFrame) ? globalThis.Number(object.endFrame) : 0,
       threads: isSet(object.threads) ? globalThis.Number(object.threads) : 0,
-      reward: isSet(object.reward) ? Long.fromValue(object.reward) : Long.UZERO,
+      reward: isSet(object.reward) ? Coin.fromJSON(object.reward) : undefined,
     };
   },
 
@@ -198,8 +203,8 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
     if (message.threads !== 0) {
       obj.threads = Math.round(message.threads);
     }
-    if (!message.reward.equals(Long.UZERO)) {
-      obj.reward = (message.reward || Long.UZERO).toString();
+    if (message.reward !== undefined) {
+      obj.reward = Coin.toJSON(message.reward);
     }
     return obj;
   },
@@ -215,8 +220,8 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
     message.endFrame = object.endFrame ?? 0;
     message.threads = object.threads ?? 0;
     message.reward = (object.reward !== undefined && object.reward !== null)
-      ? Long.fromValue(object.reward)
-      : Long.UZERO;
+      ? Coin.fromPartial(object.reward)
+      : undefined;
     return message;
   },
 };
@@ -284,7 +289,7 @@ export const MsgCreateVideoRenderingTaskResponse: MessageFns<MsgCreateVideoRende
 };
 
 function createBaseMsgAddWorker(): MsgAddWorker {
-  return { creator: "", publicIp: "" };
+  return { creator: "", publicIp: "", ipfsId: "", stake: undefined };
 }
 
 export const MsgAddWorker: MessageFns<MsgAddWorker> = {
@@ -294,6 +299,12 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
     }
     if (message.publicIp !== "") {
       writer.uint32(18).string(message.publicIp);
+    }
+    if (message.ipfsId !== "") {
+      writer.uint32(26).string(message.ipfsId);
+    }
+    if (message.stake !== undefined) {
+      Coin.encode(message.stake, writer.uint32(34).fork()).join();
     }
     return writer;
   },
@@ -321,6 +332,22 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
           message.publicIp = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.ipfsId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.stake = Coin.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -334,6 +361,8 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
     return {
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
       publicIp: isSet(object.publicIp) ? globalThis.String(object.publicIp) : "",
+      ipfsId: isSet(object.ipfsId) ? globalThis.String(object.ipfsId) : "",
+      stake: isSet(object.stake) ? Coin.fromJSON(object.stake) : undefined,
     };
   },
 
@@ -345,6 +374,12 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
     if (message.publicIp !== "") {
       obj.publicIp = message.publicIp;
     }
+    if (message.ipfsId !== "") {
+      obj.ipfsId = message.ipfsId;
+    }
+    if (message.stake !== undefined) {
+      obj.stake = Coin.toJSON(message.stake);
+    }
     return obj;
   },
 
@@ -355,16 +390,24 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
     const message = createBaseMsgAddWorker();
     message.creator = object.creator ?? "";
     message.publicIp = object.publicIp ?? "";
+    message.ipfsId = object.ipfsId ?? "";
+    message.stake = (object.stake !== undefined && object.stake !== null) ? Coin.fromPartial(object.stake) : undefined;
     return message;
   },
 };
 
 function createBaseMsgAddWorkerResponse(): MsgAddWorkerResponse {
-  return {};
+  return { ok: false, message: "" };
 }
 
 export const MsgAddWorkerResponse: MessageFns<MsgAddWorkerResponse> = {
-  encode(_: MsgAddWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: MsgAddWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ok !== false) {
+      writer.uint32(8).bool(message.ok);
+    }
+    if (message.message !== "") {
+      writer.uint32(18).string(message.message);
+    }
     return writer;
   },
 
@@ -375,6 +418,22 @@ export const MsgAddWorkerResponse: MessageFns<MsgAddWorkerResponse> = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.ok = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -384,20 +443,31 @@ export const MsgAddWorkerResponse: MessageFns<MsgAddWorkerResponse> = {
     return message;
   },
 
-  fromJSON(_: any): MsgAddWorkerResponse {
-    return {};
+  fromJSON(object: any): MsgAddWorkerResponse {
+    return {
+      ok: isSet(object.ok) ? globalThis.Boolean(object.ok) : false,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+    };
   },
 
-  toJSON(_: MsgAddWorkerResponse): unknown {
+  toJSON(message: MsgAddWorkerResponse): unknown {
     const obj: any = {};
+    if (message.ok !== false) {
+      obj.ok = message.ok;
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
     return obj;
   },
 
   create<I extends Exact<DeepPartial<MsgAddWorkerResponse>, I>>(base?: I): MsgAddWorkerResponse {
     return MsgAddWorkerResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgAddWorkerResponse>, I>>(_: I): MsgAddWorkerResponse {
+  fromPartial<I extends Exact<DeepPartial<MsgAddWorkerResponse>, I>>(object: I): MsgAddWorkerResponse {
     const message = createBaseMsgAddWorkerResponse();
+    message.ok = object.ok ?? false;
+    message.message = object.message ?? "";
     return message;
   },
 };
