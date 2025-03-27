@@ -42,6 +42,7 @@ export interface MsgAddWorkerResponse {
 export interface MsgSubscribeWorkerToTask {
   address: string;
   taskId: string;
+  threadId: string;
 }
 
 export interface MsgSubscribeWorkerToTaskResponse {
@@ -56,19 +57,35 @@ export interface MsgProposeSolution {
   creator: string;
   taskId: string;
   threadId: string;
-  solution: string[];
+  publicKey: string;
+  signatures: string[];
 }
 
 /** no response needed to a proposed solution */
 export interface MsgProposeSolutionResponse {
 }
 
+/**
+ * Msg to Propose a solution to an specific thread
+ * Actual solution is a map of hashes
+ */
+export interface MsgRevealSolution {
+  creator: string;
+  taskId: string;
+  threadId: string;
+  frames: string[];
+}
+
+/** no response needed to a proposed solution */
+export interface MsgRevealSolutionResponse {
+}
+
 export interface MsgSubmitValidation {
   creator: string;
   taskId: string;
   threadId: string;
-  filesAmount: Long;
-  valid: boolean;
+  publicKey: string;
+  signatures: string[];
 }
 
 export interface MsgSubmitValidationResponse {
@@ -78,7 +95,7 @@ export interface MsgSubmitSolution {
   creator: string;
   taskId: string;
   threadId: string;
-  cid: string;
+  dir: string;
 }
 
 export interface MsgSubmitSolutionResponse {
@@ -97,13 +114,13 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
       writer.uint32(18).string(message.cid);
     }
     if (message.startFrame !== 0) {
-      writer.uint32(24).uint32(message.startFrame);
+      writer.uint32(24).int32(message.startFrame);
     }
     if (message.endFrame !== 0) {
-      writer.uint32(32).uint32(message.endFrame);
+      writer.uint32(32).int32(message.endFrame);
     }
     if (message.threads !== 0) {
-      writer.uint32(40).uint32(message.threads);
+      writer.uint32(40).int32(message.threads);
     }
     if (message.reward !== undefined) {
       Coin.encode(message.reward, writer.uint32(50).fork()).join();
@@ -139,7 +156,7 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
             break;
           }
 
-          message.startFrame = reader.uint32();
+          message.startFrame = reader.int32();
           continue;
         }
         case 4: {
@@ -147,7 +164,7 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
             break;
           }
 
-          message.endFrame = reader.uint32();
+          message.endFrame = reader.int32();
           continue;
         }
         case 5: {
@@ -155,7 +172,7 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
             break;
           }
 
-          message.threads = reader.uint32();
+          message.threads = reader.int32();
           continue;
         }
         case 6: {
@@ -473,7 +490,7 @@ export const MsgAddWorkerResponse: MessageFns<MsgAddWorkerResponse> = {
 };
 
 function createBaseMsgSubscribeWorkerToTask(): MsgSubscribeWorkerToTask {
-  return { address: "", taskId: "" };
+  return { address: "", taskId: "", threadId: "" };
 }
 
 export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
@@ -483,6 +500,9 @@ export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
     }
     if (message.taskId !== "") {
       writer.uint32(18).string(message.taskId);
+    }
+    if (message.threadId !== "") {
+      writer.uint32(26).string(message.threadId);
     }
     return writer;
   },
@@ -510,6 +530,14 @@ export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
           message.taskId = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.threadId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -523,6 +551,7 @@ export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
     return {
       address: isSet(object.address) ? globalThis.String(object.address) : "",
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
+      threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
     };
   },
 
@@ -534,6 +563,9 @@ export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
     if (message.taskId !== "") {
       obj.taskId = message.taskId;
     }
+    if (message.threadId !== "") {
+      obj.threadId = message.threadId;
+    }
     return obj;
   },
 
@@ -544,6 +576,7 @@ export const MsgSubscribeWorkerToTask: MessageFns<MsgSubscribeWorkerToTask> = {
     const message = createBaseMsgSubscribeWorkerToTask();
     message.address = object.address ?? "";
     message.taskId = object.taskId ?? "";
+    message.threadId = object.threadId ?? "";
     return message;
   },
 };
@@ -611,7 +644,7 @@ export const MsgSubscribeWorkerToTaskResponse: MessageFns<MsgSubscribeWorkerToTa
 };
 
 function createBaseMsgProposeSolution(): MsgProposeSolution {
-  return { creator: "", taskId: "", threadId: "", solution: [] };
+  return { creator: "", taskId: "", threadId: "", publicKey: "", signatures: [] };
 }
 
 export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
@@ -625,8 +658,11 @@ export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
     if (message.threadId !== "") {
       writer.uint32(26).string(message.threadId);
     }
-    for (const v of message.solution) {
-      writer.uint32(34).string(v!);
+    if (message.publicKey !== "") {
+      writer.uint32(34).string(message.publicKey);
+    }
+    for (const v of message.signatures) {
+      writer.uint32(42).string(v!);
     }
     return writer;
   },
@@ -667,7 +703,15 @@ export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
             break;
           }
 
-          message.solution.push(reader.string());
+          message.publicKey = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.signatures.push(reader.string());
           continue;
         }
       }
@@ -684,7 +728,10 @@ export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
       threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
-      solution: globalThis.Array.isArray(object?.solution) ? object.solution.map((e: any) => globalThis.String(e)) : [],
+      publicKey: isSet(object.publicKey) ? globalThis.String(object.publicKey) : "",
+      signatures: globalThis.Array.isArray(object?.signatures)
+        ? object.signatures.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -699,8 +746,11 @@ export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
     if (message.threadId !== "") {
       obj.threadId = message.threadId;
     }
-    if (message.solution?.length) {
-      obj.solution = message.solution;
+    if (message.publicKey !== "") {
+      obj.publicKey = message.publicKey;
+    }
+    if (message.signatures?.length) {
+      obj.signatures = message.signatures;
     }
     return obj;
   },
@@ -713,7 +763,8 @@ export const MsgProposeSolution: MessageFns<MsgProposeSolution> = {
     message.creator = object.creator ?? "";
     message.taskId = object.taskId ?? "";
     message.threadId = object.threadId ?? "";
-    message.solution = object.solution?.map((e) => e) || [];
+    message.publicKey = object.publicKey ?? "";
+    message.signatures = object.signatures?.map((e) => e) || [];
     return message;
   },
 };
@@ -761,8 +812,159 @@ export const MsgProposeSolutionResponse: MessageFns<MsgProposeSolutionResponse> 
   },
 };
 
+function createBaseMsgRevealSolution(): MsgRevealSolution {
+  return { creator: "", taskId: "", threadId: "", frames: [] };
+}
+
+export const MsgRevealSolution: MessageFns<MsgRevealSolution> = {
+  encode(message: MsgRevealSolution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.taskId !== "") {
+      writer.uint32(18).string(message.taskId);
+    }
+    if (message.threadId !== "") {
+      writer.uint32(26).string(message.threadId);
+    }
+    for (const v of message.frames) {
+      writer.uint32(34).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgRevealSolution {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgRevealSolution();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.creator = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.taskId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.threadId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.frames.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgRevealSolution {
+    return {
+      creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
+      taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
+      threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
+      frames: globalThis.Array.isArray(object?.frames) ? object.frames.map((e: any) => globalThis.String(e)) : [],
+    };
+  },
+
+  toJSON(message: MsgRevealSolution): unknown {
+    const obj: any = {};
+    if (message.creator !== "") {
+      obj.creator = message.creator;
+    }
+    if (message.taskId !== "") {
+      obj.taskId = message.taskId;
+    }
+    if (message.threadId !== "") {
+      obj.threadId = message.threadId;
+    }
+    if (message.frames?.length) {
+      obj.frames = message.frames;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgRevealSolution>, I>>(base?: I): MsgRevealSolution {
+    return MsgRevealSolution.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgRevealSolution>, I>>(object: I): MsgRevealSolution {
+    const message = createBaseMsgRevealSolution();
+    message.creator = object.creator ?? "";
+    message.taskId = object.taskId ?? "";
+    message.threadId = object.threadId ?? "";
+    message.frames = object.frames?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseMsgRevealSolutionResponse(): MsgRevealSolutionResponse {
+  return {};
+}
+
+export const MsgRevealSolutionResponse: MessageFns<MsgRevealSolutionResponse> = {
+  encode(_: MsgRevealSolutionResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgRevealSolutionResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgRevealSolutionResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgRevealSolutionResponse {
+    return {};
+  },
+
+  toJSON(_: MsgRevealSolutionResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgRevealSolutionResponse>, I>>(base?: I): MsgRevealSolutionResponse {
+    return MsgRevealSolutionResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgRevealSolutionResponse>, I>>(_: I): MsgRevealSolutionResponse {
+    const message = createBaseMsgRevealSolutionResponse();
+    return message;
+  },
+};
+
 function createBaseMsgSubmitValidation(): MsgSubmitValidation {
-  return { creator: "", taskId: "", threadId: "", filesAmount: Long.UZERO, valid: false };
+  return { creator: "", taskId: "", threadId: "", publicKey: "", signatures: [] };
 }
 
 export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
@@ -776,11 +978,11 @@ export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
     if (message.threadId !== "") {
       writer.uint32(26).string(message.threadId);
     }
-    if (!message.filesAmount.equals(Long.UZERO)) {
-      writer.uint32(32).uint64(message.filesAmount.toString());
+    if (message.publicKey !== "") {
+      writer.uint32(34).string(message.publicKey);
     }
-    if (message.valid !== false) {
-      writer.uint32(40).bool(message.valid);
+    for (const v of message.signatures) {
+      writer.uint32(42).string(v!);
     }
     return writer;
   },
@@ -817,19 +1019,19 @@ export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
           continue;
         }
         case 4: {
-          if (tag !== 32) {
+          if (tag !== 34) {
             break;
           }
 
-          message.filesAmount = Long.fromString(reader.uint64().toString(), true);
+          message.publicKey = reader.string();
           continue;
         }
         case 5: {
-          if (tag !== 40) {
+          if (tag !== 42) {
             break;
           }
 
-          message.valid = reader.bool();
+          message.signatures.push(reader.string());
           continue;
         }
       }
@@ -846,8 +1048,10 @@ export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
       threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
-      filesAmount: isSet(object.filesAmount) ? Long.fromValue(object.filesAmount) : Long.UZERO,
-      valid: isSet(object.valid) ? globalThis.Boolean(object.valid) : false,
+      publicKey: isSet(object.publicKey) ? globalThis.String(object.publicKey) : "",
+      signatures: globalThis.Array.isArray(object?.signatures)
+        ? object.signatures.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -862,11 +1066,11 @@ export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
     if (message.threadId !== "") {
       obj.threadId = message.threadId;
     }
-    if (!message.filesAmount.equals(Long.UZERO)) {
-      obj.filesAmount = (message.filesAmount || Long.UZERO).toString();
+    if (message.publicKey !== "") {
+      obj.publicKey = message.publicKey;
     }
-    if (message.valid !== false) {
-      obj.valid = message.valid;
+    if (message.signatures?.length) {
+      obj.signatures = message.signatures;
     }
     return obj;
   },
@@ -879,10 +1083,8 @@ export const MsgSubmitValidation: MessageFns<MsgSubmitValidation> = {
     message.creator = object.creator ?? "";
     message.taskId = object.taskId ?? "";
     message.threadId = object.threadId ?? "";
-    message.filesAmount = (object.filesAmount !== undefined && object.filesAmount !== null)
-      ? Long.fromValue(object.filesAmount)
-      : Long.UZERO;
-    message.valid = object.valid ?? false;
+    message.publicKey = object.publicKey ?? "";
+    message.signatures = object.signatures?.map((e) => e) || [];
     return message;
   },
 };
@@ -931,7 +1133,7 @@ export const MsgSubmitValidationResponse: MessageFns<MsgSubmitValidationResponse
 };
 
 function createBaseMsgSubmitSolution(): MsgSubmitSolution {
-  return { creator: "", taskId: "", threadId: "", cid: "" };
+  return { creator: "", taskId: "", threadId: "", dir: "" };
 }
 
 export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
@@ -945,8 +1147,8 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     if (message.threadId !== "") {
       writer.uint32(26).string(message.threadId);
     }
-    if (message.cid !== "") {
-      writer.uint32(34).string(message.cid);
+    if (message.dir !== "") {
+      writer.uint32(34).string(message.dir);
     }
     return writer;
   },
@@ -987,7 +1189,7 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
             break;
           }
 
-          message.cid = reader.string();
+          message.dir = reader.string();
           continue;
         }
       }
@@ -1004,7 +1206,7 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
       threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
-      cid: isSet(object.cid) ? globalThis.String(object.cid) : "",
+      dir: isSet(object.dir) ? globalThis.String(object.dir) : "",
     };
   },
 
@@ -1019,8 +1221,8 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     if (message.threadId !== "") {
       obj.threadId = message.threadId;
     }
-    if (message.cid !== "") {
-      obj.cid = message.cid;
+    if (message.dir !== "") {
+      obj.dir = message.dir;
     }
     return obj;
   },
@@ -1033,7 +1235,7 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     message.creator = object.creator ?? "";
     message.taskId = object.taskId ?? "";
     message.threadId = object.threadId ?? "";
-    message.cid = object.cid ?? "";
+    message.dir = object.dir ?? "";
     return message;
   },
 };
@@ -1092,6 +1294,8 @@ export interface Msg {
   ProposeSolution(request: MsgProposeSolution): Promise<MsgProposeSolutionResponse>;
   /** Propose a solution for the test of the nodes to validate */
   SubmitValidation(request: MsgSubmitValidation): Promise<MsgSubmitValidationResponse>;
+  /** Propose a solution for the test of the nodes to validate */
+  RevealSolution(request: MsgRevealSolution): Promise<MsgRevealSolutionResponse>;
   /** Submits the solution to IPFS */
   SubmitSolution(request: MsgSubmitSolution): Promise<MsgSubmitSolutionResponse>;
 }
@@ -1108,6 +1312,7 @@ export class MsgClientImpl implements Msg {
     this.SubscribeWorkerToTask = this.SubscribeWorkerToTask.bind(this);
     this.ProposeSolution = this.ProposeSolution.bind(this);
     this.SubmitValidation = this.SubmitValidation.bind(this);
+    this.RevealSolution = this.RevealSolution.bind(this);
     this.SubmitSolution = this.SubmitSolution.bind(this);
   }
   CreateVideoRenderingTask(request: MsgCreateVideoRenderingTask): Promise<MsgCreateVideoRenderingTaskResponse> {
@@ -1138,6 +1343,12 @@ export class MsgClientImpl implements Msg {
     const data = MsgSubmitValidation.encode(request).finish();
     const promise = this.rpc.request(this.service, "SubmitValidation", data);
     return promise.then((data) => MsgSubmitValidationResponse.decode(new BinaryReader(data)));
+  }
+
+  RevealSolution(request: MsgRevealSolution): Promise<MsgRevealSolutionResponse> {
+    const data = MsgRevealSolution.encode(request).finish();
+    const promise = this.rpc.request(this.service, "RevealSolution", data);
+    return promise.then((data) => MsgRevealSolutionResponse.decode(new BinaryReader(data)));
   }
 
   SubmitSolution(request: MsgSubmitSolution): Promise<MsgSubmitSolutionResponse> {

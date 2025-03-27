@@ -75,8 +75,8 @@ export interface VideoRenderingTask {
 export interface VideoRenderingThread {
   threadId: string;
   taskId: string;
-  startFrame: number;
-  endFrame: number;
+  startFrame: Long;
+  endFrame: Long;
   completed: boolean;
   workers: string[];
   solution?: VideoRenderingThread_Solution | undefined;
@@ -85,15 +85,26 @@ export interface VideoRenderingThread {
 
 export interface VideoRenderingThread_Solution {
   proposedBy: string;
-  hashes: string[];
-  files: string;
+  frames: VideoRenderingThread_Frame[];
+  publicKey: string;
+  dir: string;
+  accepted: boolean;
 }
 
 export interface VideoRenderingThread_Validation {
   validator: string;
-  amountFiles: Long;
-  valid: boolean;
+  frames: VideoRenderingThread_Frame[];
+  publicKey: string;
   isReverse: boolean;
+}
+
+export interface VideoRenderingThread_Frame {
+  filename: string;
+  signature: string;
+  cid: string;
+  hash: string;
+  validCount: Long;
+  invalidCount: Long;
 }
 
 /** Stores information about the Video Rendering  task */
@@ -162,7 +173,7 @@ export function videoRenderingLogs_VideoRenderingLog_SEVERITYToJSON(
 }
 
 function createBaseParams(): Params {
-  return { minWorkerStaking: undefined, maxWorkersPerThread: Long.UZERO, minValidators: Long.UZERO };
+  return { minWorkerStaking: undefined, maxWorkersPerThread: Long.ZERO, minValidators: Long.ZERO };
 }
 
 export const Params: MessageFns<Params> = {
@@ -170,11 +181,11 @@ export const Params: MessageFns<Params> = {
     if (message.minWorkerStaking !== undefined) {
       Coin.encode(message.minWorkerStaking, writer.uint32(10).fork()).join();
     }
-    if (!message.maxWorkersPerThread.equals(Long.UZERO)) {
-      writer.uint32(16).uint64(message.maxWorkersPerThread.toString());
+    if (!message.maxWorkersPerThread.equals(Long.ZERO)) {
+      writer.uint32(16).int64(message.maxWorkersPerThread.toString());
     }
-    if (!message.minValidators.equals(Long.UZERO)) {
-      writer.uint32(24).uint64(message.minValidators.toString());
+    if (!message.minValidators.equals(Long.ZERO)) {
+      writer.uint32(24).int64(message.minValidators.toString());
     }
     return writer;
   },
@@ -199,7 +210,7 @@ export const Params: MessageFns<Params> = {
             break;
           }
 
-          message.maxWorkersPerThread = Long.fromString(reader.uint64().toString(), true);
+          message.maxWorkersPerThread = Long.fromString(reader.int64().toString());
           continue;
         }
         case 3: {
@@ -207,7 +218,7 @@ export const Params: MessageFns<Params> = {
             break;
           }
 
-          message.minValidators = Long.fromString(reader.uint64().toString(), true);
+          message.minValidators = Long.fromString(reader.int64().toString());
           continue;
         }
       }
@@ -222,8 +233,8 @@ export const Params: MessageFns<Params> = {
   fromJSON(object: any): Params {
     return {
       minWorkerStaking: isSet(object.minWorkerStaking) ? Coin.fromJSON(object.minWorkerStaking) : undefined,
-      maxWorkersPerThread: isSet(object.maxWorkersPerThread) ? Long.fromValue(object.maxWorkersPerThread) : Long.UZERO,
-      minValidators: isSet(object.minValidators) ? Long.fromValue(object.minValidators) : Long.UZERO,
+      maxWorkersPerThread: isSet(object.maxWorkersPerThread) ? Long.fromValue(object.maxWorkersPerThread) : Long.ZERO,
+      minValidators: isSet(object.minValidators) ? Long.fromValue(object.minValidators) : Long.ZERO,
     };
   },
 
@@ -232,11 +243,11 @@ export const Params: MessageFns<Params> = {
     if (message.minWorkerStaking !== undefined) {
       obj.minWorkerStaking = Coin.toJSON(message.minWorkerStaking);
     }
-    if (!message.maxWorkersPerThread.equals(Long.UZERO)) {
-      obj.maxWorkersPerThread = (message.maxWorkersPerThread || Long.UZERO).toString();
+    if (!message.maxWorkersPerThread.equals(Long.ZERO)) {
+      obj.maxWorkersPerThread = (message.maxWorkersPerThread || Long.ZERO).toString();
     }
-    if (!message.minValidators.equals(Long.UZERO)) {
-      obj.minValidators = (message.minValidators || Long.UZERO).toString();
+    if (!message.minValidators.equals(Long.ZERO)) {
+      obj.minValidators = (message.minValidators || Long.ZERO).toString();
     }
     return obj;
   },
@@ -251,10 +262,10 @@ export const Params: MessageFns<Params> = {
       : undefined;
     message.maxWorkersPerThread = (object.maxWorkersPerThread !== undefined && object.maxWorkersPerThread !== null)
       ? Long.fromValue(object.maxWorkersPerThread)
-      : Long.UZERO;
+      : Long.ZERO;
     message.minValidators = (object.minValidators !== undefined && object.minValidators !== null)
       ? Long.fromValue(object.minValidators)
-      : Long.UZERO;
+      : Long.ZERO;
     return message;
   },
 };
@@ -404,7 +415,7 @@ export const Worker: MessageFns<Worker> = {
       writer.uint32(42).string(message.currentTaskId);
     }
     if (message.currentThreadIndex !== 0) {
-      writer.uint32(48).uint32(message.currentThreadIndex);
+      writer.uint32(48).int32(message.currentThreadIndex);
     }
     if (message.publicIp !== "") {
       writer.uint32(58).string(message.publicIp);
@@ -459,7 +470,7 @@ export const Worker: MessageFns<Worker> = {
             break;
           }
 
-          message.currentThreadIndex = reader.uint32();
+          message.currentThreadIndex = reader.int32();
           continue;
         }
         case 7: {
@@ -556,10 +567,10 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
       writer.uint32(16).int64(message.points.toString());
     }
     if (message.validations !== 0) {
-      writer.uint32(24).uint32(message.validations);
+      writer.uint32(24).int32(message.validations);
     }
     if (message.solutions !== 0) {
-      writer.uint32(32).uint32(message.solutions);
+      writer.uint32(32).int32(message.solutions);
     }
     if (message.winnings !== undefined) {
       Coin.encode(message.winnings, writer.uint32(42).fork()).join();
@@ -595,7 +606,7 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
             break;
           }
 
-          message.validations = reader.uint32();
+          message.validations = reader.int32();
           continue;
         }
         case 4: {
@@ -603,7 +614,7 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
             break;
           }
 
-          message.solutions = reader.uint32();
+          message.solutions = reader.int32();
           continue;
         }
         case 5: {
@@ -699,13 +710,13 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
       writer.uint32(26).string(message.cid);
     }
     if (message.startFrame !== 0) {
-      writer.uint32(32).uint32(message.startFrame);
+      writer.uint32(32).int32(message.startFrame);
     }
     if (message.endFrame !== 0) {
-      writer.uint32(40).uint32(message.endFrame);
+      writer.uint32(40).int32(message.endFrame);
     }
     if (message.threadAmount !== 0) {
-      writer.uint32(48).uint32(message.threadAmount);
+      writer.uint32(48).int32(message.threadAmount);
     }
     if (message.completed !== false) {
       writer.uint32(56).bool(message.completed);
@@ -755,7 +766,7 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
             break;
           }
 
-          message.startFrame = reader.uint32();
+          message.startFrame = reader.int32();
           continue;
         }
         case 5: {
@@ -763,7 +774,7 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
             break;
           }
 
-          message.endFrame = reader.uint32();
+          message.endFrame = reader.int32();
           continue;
         }
         case 6: {
@@ -771,7 +782,7 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
             break;
           }
 
-          message.threadAmount = reader.uint32();
+          message.threadAmount = reader.int32();
           continue;
         }
         case 7: {
@@ -879,8 +890,8 @@ function createBaseVideoRenderingThread(): VideoRenderingThread {
   return {
     threadId: "",
     taskId: "",
-    startFrame: 0,
-    endFrame: 0,
+    startFrame: Long.ZERO,
+    endFrame: Long.ZERO,
     completed: false,
     workers: [],
     solution: undefined,
@@ -896,11 +907,11 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
     if (message.taskId !== "") {
       writer.uint32(18).string(message.taskId);
     }
-    if (message.startFrame !== 0) {
-      writer.uint32(24).uint32(message.startFrame);
+    if (!message.startFrame.equals(Long.ZERO)) {
+      writer.uint32(24).int64(message.startFrame.toString());
     }
-    if (message.endFrame !== 0) {
-      writer.uint32(32).uint32(message.endFrame);
+    if (!message.endFrame.equals(Long.ZERO)) {
+      writer.uint32(32).int64(message.endFrame.toString());
     }
     if (message.completed !== false) {
       writer.uint32(40).bool(message.completed);
@@ -945,7 +956,7 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
             break;
           }
 
-          message.startFrame = reader.uint32();
+          message.startFrame = Long.fromString(reader.int64().toString());
           continue;
         }
         case 4: {
@@ -953,7 +964,7 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
             break;
           }
 
-          message.endFrame = reader.uint32();
+          message.endFrame = Long.fromString(reader.int64().toString());
           continue;
         }
         case 5: {
@@ -1001,8 +1012,8 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
     return {
       threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
-      startFrame: isSet(object.startFrame) ? globalThis.Number(object.startFrame) : 0,
-      endFrame: isSet(object.endFrame) ? globalThis.Number(object.endFrame) : 0,
+      startFrame: isSet(object.startFrame) ? Long.fromValue(object.startFrame) : Long.ZERO,
+      endFrame: isSet(object.endFrame) ? Long.fromValue(object.endFrame) : Long.ZERO,
       completed: isSet(object.completed) ? globalThis.Boolean(object.completed) : false,
       workers: globalThis.Array.isArray(object?.workers) ? object.workers.map((e: any) => globalThis.String(e)) : [],
       solution: isSet(object.solution) ? VideoRenderingThread_Solution.fromJSON(object.solution) : undefined,
@@ -1020,11 +1031,11 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
     if (message.taskId !== "") {
       obj.taskId = message.taskId;
     }
-    if (message.startFrame !== 0) {
-      obj.startFrame = Math.round(message.startFrame);
+    if (!message.startFrame.equals(Long.ZERO)) {
+      obj.startFrame = (message.startFrame || Long.ZERO).toString();
     }
-    if (message.endFrame !== 0) {
-      obj.endFrame = Math.round(message.endFrame);
+    if (!message.endFrame.equals(Long.ZERO)) {
+      obj.endFrame = (message.endFrame || Long.ZERO).toString();
     }
     if (message.completed !== false) {
       obj.completed = message.completed;
@@ -1048,8 +1059,12 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
     const message = createBaseVideoRenderingThread();
     message.threadId = object.threadId ?? "";
     message.taskId = object.taskId ?? "";
-    message.startFrame = object.startFrame ?? 0;
-    message.endFrame = object.endFrame ?? 0;
+    message.startFrame = (object.startFrame !== undefined && object.startFrame !== null)
+      ? Long.fromValue(object.startFrame)
+      : Long.ZERO;
+    message.endFrame = (object.endFrame !== undefined && object.endFrame !== null)
+      ? Long.fromValue(object.endFrame)
+      : Long.ZERO;
     message.completed = object.completed ?? false;
     message.workers = object.workers?.map((e) => e) || [];
     message.solution = (object.solution !== undefined && object.solution !== null)
@@ -1061,7 +1076,7 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
 };
 
 function createBaseVideoRenderingThread_Solution(): VideoRenderingThread_Solution {
-  return { proposedBy: "", hashes: [], files: "" };
+  return { proposedBy: "", frames: [], publicKey: "", dir: "", accepted: false };
 }
 
 export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solution> = {
@@ -1069,11 +1084,17 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
     if (message.proposedBy !== "") {
       writer.uint32(10).string(message.proposedBy);
     }
-    for (const v of message.hashes) {
-      writer.uint32(18).string(v!);
+    for (const v of message.frames) {
+      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork()).join();
     }
-    if (message.files !== "") {
-      writer.uint32(26).string(message.files);
+    if (message.publicKey !== "") {
+      writer.uint32(26).string(message.publicKey);
+    }
+    if (message.dir !== "") {
+      writer.uint32(34).string(message.dir);
+    }
+    if (message.accepted !== false) {
+      writer.uint32(40).bool(message.accepted);
     }
     return writer;
   },
@@ -1098,7 +1119,7 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
             break;
           }
 
-          message.hashes.push(reader.string());
+          message.frames.push(VideoRenderingThread_Frame.decode(reader, reader.uint32()));
           continue;
         }
         case 3: {
@@ -1106,7 +1127,23 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
             break;
           }
 
-          message.files = reader.string();
+          message.publicKey = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.dir = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.accepted = reader.bool();
           continue;
         }
       }
@@ -1121,8 +1158,12 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
   fromJSON(object: any): VideoRenderingThread_Solution {
     return {
       proposedBy: isSet(object.proposedBy) ? globalThis.String(object.proposedBy) : "",
-      hashes: globalThis.Array.isArray(object?.hashes) ? object.hashes.map((e: any) => globalThis.String(e)) : [],
-      files: isSet(object.files) ? globalThis.String(object.files) : "",
+      frames: globalThis.Array.isArray(object?.frames)
+        ? object.frames.map((e: any) => VideoRenderingThread_Frame.fromJSON(e))
+        : [],
+      publicKey: isSet(object.publicKey) ? globalThis.String(object.publicKey) : "",
+      dir: isSet(object.dir) ? globalThis.String(object.dir) : "",
+      accepted: isSet(object.accepted) ? globalThis.Boolean(object.accepted) : false,
     };
   },
 
@@ -1131,11 +1172,17 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
     if (message.proposedBy !== "") {
       obj.proposedBy = message.proposedBy;
     }
-    if (message.hashes?.length) {
-      obj.hashes = message.hashes;
+    if (message.frames?.length) {
+      obj.frames = message.frames.map((e) => VideoRenderingThread_Frame.toJSON(e));
     }
-    if (message.files !== "") {
-      obj.files = message.files;
+    if (message.publicKey !== "") {
+      obj.publicKey = message.publicKey;
+    }
+    if (message.dir !== "") {
+      obj.dir = message.dir;
+    }
+    if (message.accepted !== false) {
+      obj.accepted = message.accepted;
     }
     return obj;
   },
@@ -1148,14 +1195,16 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
   ): VideoRenderingThread_Solution {
     const message = createBaseVideoRenderingThread_Solution();
     message.proposedBy = object.proposedBy ?? "";
-    message.hashes = object.hashes?.map((e) => e) || [];
-    message.files = object.files ?? "";
+    message.frames = object.frames?.map((e) => VideoRenderingThread_Frame.fromPartial(e)) || [];
+    message.publicKey = object.publicKey ?? "";
+    message.dir = object.dir ?? "";
+    message.accepted = object.accepted ?? false;
     return message;
   },
 };
 
 function createBaseVideoRenderingThread_Validation(): VideoRenderingThread_Validation {
-  return { validator: "", amountFiles: Long.UZERO, valid: false, isReverse: false };
+  return { validator: "", frames: [], publicKey: "", isReverse: false };
 }
 
 export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Validation> = {
@@ -1163,11 +1212,11 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
     if (message.validator !== "") {
       writer.uint32(10).string(message.validator);
     }
-    if (!message.amountFiles.equals(Long.UZERO)) {
-      writer.uint32(16).uint64(message.amountFiles.toString());
+    for (const v of message.frames) {
+      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork()).join();
     }
-    if (message.valid !== false) {
-      writer.uint32(24).bool(message.valid);
+    if (message.publicKey !== "") {
+      writer.uint32(26).string(message.publicKey);
     }
     if (message.isReverse !== false) {
       writer.uint32(32).bool(message.isReverse);
@@ -1191,19 +1240,19 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.amountFiles = Long.fromString(reader.uint64().toString(), true);
+          message.frames.push(VideoRenderingThread_Frame.decode(reader, reader.uint32()));
           continue;
         }
         case 3: {
-          if (tag !== 24) {
+          if (tag !== 26) {
             break;
           }
 
-          message.valid = reader.bool();
+          message.publicKey = reader.string();
           continue;
         }
         case 4: {
@@ -1226,8 +1275,10 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
   fromJSON(object: any): VideoRenderingThread_Validation {
     return {
       validator: isSet(object.validator) ? globalThis.String(object.validator) : "",
-      amountFiles: isSet(object.amountFiles) ? Long.fromValue(object.amountFiles) : Long.UZERO,
-      valid: isSet(object.valid) ? globalThis.Boolean(object.valid) : false,
+      frames: globalThis.Array.isArray(object?.frames)
+        ? object.frames.map((e: any) => VideoRenderingThread_Frame.fromJSON(e))
+        : [],
+      publicKey: isSet(object.publicKey) ? globalThis.String(object.publicKey) : "",
       isReverse: isSet(object.isReverse) ? globalThis.Boolean(object.isReverse) : false,
     };
   },
@@ -1237,11 +1288,11 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
     if (message.validator !== "") {
       obj.validator = message.validator;
     }
-    if (!message.amountFiles.equals(Long.UZERO)) {
-      obj.amountFiles = (message.amountFiles || Long.UZERO).toString();
+    if (message.frames?.length) {
+      obj.frames = message.frames.map((e) => VideoRenderingThread_Frame.toJSON(e));
     }
-    if (message.valid !== false) {
-      obj.valid = message.valid;
+    if (message.publicKey !== "") {
+      obj.publicKey = message.publicKey;
     }
     if (message.isReverse !== false) {
       obj.isReverse = message.isReverse;
@@ -1257,23 +1308,165 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
   ): VideoRenderingThread_Validation {
     const message = createBaseVideoRenderingThread_Validation();
     message.validator = object.validator ?? "";
-    message.amountFiles = (object.amountFiles !== undefined && object.amountFiles !== null)
-      ? Long.fromValue(object.amountFiles)
-      : Long.UZERO;
-    message.valid = object.valid ?? false;
+    message.frames = object.frames?.map((e) => VideoRenderingThread_Frame.fromPartial(e)) || [];
+    message.publicKey = object.publicKey ?? "";
     message.isReverse = object.isReverse ?? false;
     return message;
   },
 };
 
+function createBaseVideoRenderingThread_Frame(): VideoRenderingThread_Frame {
+  return { filename: "", signature: "", cid: "", hash: "", validCount: Long.ZERO, invalidCount: Long.ZERO };
+}
+
+export const VideoRenderingThread_Frame: MessageFns<VideoRenderingThread_Frame> = {
+  encode(message: VideoRenderingThread_Frame, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.filename !== "") {
+      writer.uint32(10).string(message.filename);
+    }
+    if (message.signature !== "") {
+      writer.uint32(18).string(message.signature);
+    }
+    if (message.cid !== "") {
+      writer.uint32(26).string(message.cid);
+    }
+    if (message.hash !== "") {
+      writer.uint32(34).string(message.hash);
+    }
+    if (!message.validCount.equals(Long.ZERO)) {
+      writer.uint32(40).int64(message.validCount.toString());
+    }
+    if (!message.invalidCount.equals(Long.ZERO)) {
+      writer.uint32(48).int64(message.invalidCount.toString());
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingThread_Frame {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVideoRenderingThread_Frame();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.filename = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.signature = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.cid = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.hash = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.validCount = Long.fromString(reader.int64().toString());
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.invalidCount = Long.fromString(reader.int64().toString());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VideoRenderingThread_Frame {
+    return {
+      filename: isSet(object.filename) ? globalThis.String(object.filename) : "",
+      signature: isSet(object.signature) ? globalThis.String(object.signature) : "",
+      cid: isSet(object.cid) ? globalThis.String(object.cid) : "",
+      hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
+      validCount: isSet(object.validCount) ? Long.fromValue(object.validCount) : Long.ZERO,
+      invalidCount: isSet(object.invalidCount) ? Long.fromValue(object.invalidCount) : Long.ZERO,
+    };
+  },
+
+  toJSON(message: VideoRenderingThread_Frame): unknown {
+    const obj: any = {};
+    if (message.filename !== "") {
+      obj.filename = message.filename;
+    }
+    if (message.signature !== "") {
+      obj.signature = message.signature;
+    }
+    if (message.cid !== "") {
+      obj.cid = message.cid;
+    }
+    if (message.hash !== "") {
+      obj.hash = message.hash;
+    }
+    if (!message.validCount.equals(Long.ZERO)) {
+      obj.validCount = (message.validCount || Long.ZERO).toString();
+    }
+    if (!message.invalidCount.equals(Long.ZERO)) {
+      obj.invalidCount = (message.invalidCount || Long.ZERO).toString();
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VideoRenderingThread_Frame>, I>>(base?: I): VideoRenderingThread_Frame {
+    return VideoRenderingThread_Frame.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VideoRenderingThread_Frame>, I>>(object: I): VideoRenderingThread_Frame {
+    const message = createBaseVideoRenderingThread_Frame();
+    message.filename = object.filename ?? "";
+    message.signature = object.signature ?? "";
+    message.cid = object.cid ?? "";
+    message.hash = object.hash ?? "";
+    message.validCount = (object.validCount !== undefined && object.validCount !== null)
+      ? Long.fromValue(object.validCount)
+      : Long.ZERO;
+    message.invalidCount = (object.invalidCount !== undefined && object.invalidCount !== null)
+      ? Long.fromValue(object.invalidCount)
+      : Long.ZERO;
+    return message;
+  },
+};
+
 function createBaseVideoRenderingTaskInfo(): VideoRenderingTaskInfo {
-  return { nextId: Long.UZERO };
+  return { nextId: Long.ZERO };
 }
 
 export const VideoRenderingTaskInfo: MessageFns<VideoRenderingTaskInfo> = {
   encode(message: VideoRenderingTaskInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (!message.nextId.equals(Long.UZERO)) {
-      writer.uint32(8).uint64(message.nextId.toString());
+    if (!message.nextId.equals(Long.ZERO)) {
+      writer.uint32(8).int64(message.nextId.toString());
     }
     return writer;
   },
@@ -1290,7 +1483,7 @@ export const VideoRenderingTaskInfo: MessageFns<VideoRenderingTaskInfo> = {
             break;
           }
 
-          message.nextId = Long.fromString(reader.uint64().toString(), true);
+          message.nextId = Long.fromString(reader.int64().toString());
           continue;
         }
       }
@@ -1303,13 +1496,13 @@ export const VideoRenderingTaskInfo: MessageFns<VideoRenderingTaskInfo> = {
   },
 
   fromJSON(object: any): VideoRenderingTaskInfo {
-    return { nextId: isSet(object.nextId) ? Long.fromValue(object.nextId) : Long.UZERO };
+    return { nextId: isSet(object.nextId) ? Long.fromValue(object.nextId) : Long.ZERO };
   },
 
   toJSON(message: VideoRenderingTaskInfo): unknown {
     const obj: any = {};
-    if (!message.nextId.equals(Long.UZERO)) {
-      obj.nextId = (message.nextId || Long.UZERO).toString();
+    if (!message.nextId.equals(Long.ZERO)) {
+      obj.nextId = (message.nextId || Long.ZERO).toString();
     }
     return obj;
   },
@@ -1321,7 +1514,7 @@ export const VideoRenderingTaskInfo: MessageFns<VideoRenderingTaskInfo> = {
     const message = createBaseVideoRenderingTaskInfo();
     message.nextId = (object.nextId !== undefined && object.nextId !== null)
       ? Long.fromValue(object.nextId)
-      : Long.UZERO;
+      : Long.ZERO;
     return message;
   },
 };
