@@ -96,6 +96,7 @@ export interface MsgSubmitSolution {
   taskId: string;
   threadId: string;
   dir: string;
+  averageRenderSeconds: Long;
 }
 
 export interface MsgSubmitSolutionResponse {
@@ -1133,7 +1134,7 @@ export const MsgSubmitValidationResponse: MessageFns<MsgSubmitValidationResponse
 };
 
 function createBaseMsgSubmitSolution(): MsgSubmitSolution {
-  return { creator: "", taskId: "", threadId: "", dir: "" };
+  return { creator: "", taskId: "", threadId: "", dir: "", averageRenderSeconds: Long.ZERO };
 }
 
 export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
@@ -1149,6 +1150,9 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     }
     if (message.dir !== "") {
       writer.uint32(34).string(message.dir);
+    }
+    if (!message.averageRenderSeconds.equals(Long.ZERO)) {
+      writer.uint32(40).int64(message.averageRenderSeconds.toString());
     }
     return writer;
   },
@@ -1192,6 +1196,14 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
           message.dir = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.averageRenderSeconds = Long.fromString(reader.int64().toString());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1207,6 +1219,9 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
       taskId: isSet(object.taskId) ? globalThis.String(object.taskId) : "",
       threadId: isSet(object.threadId) ? globalThis.String(object.threadId) : "",
       dir: isSet(object.dir) ? globalThis.String(object.dir) : "",
+      averageRenderSeconds: isSet(object.averageRenderSeconds)
+        ? Long.fromValue(object.averageRenderSeconds)
+        : Long.ZERO,
     };
   },
 
@@ -1224,6 +1239,9 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     if (message.dir !== "") {
       obj.dir = message.dir;
     }
+    if (!message.averageRenderSeconds.equals(Long.ZERO)) {
+      obj.averageRenderSeconds = (message.averageRenderSeconds || Long.ZERO).toString();
+    }
     return obj;
   },
 
@@ -1236,6 +1254,9 @@ export const MsgSubmitSolution: MessageFns<MsgSubmitSolution> = {
     message.taskId = object.taskId ?? "";
     message.threadId = object.threadId ?? "";
     message.dir = object.dir ?? "";
+    message.averageRenderSeconds = (object.averageRenderSeconds !== undefined && object.averageRenderSeconds !== null)
+      ? Long.fromValue(object.averageRenderSeconds)
+      : Long.ZERO;
     return message;
   },
 };

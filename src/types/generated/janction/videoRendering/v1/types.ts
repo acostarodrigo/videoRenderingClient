@@ -81,6 +81,7 @@ export interface VideoRenderingThread {
   workers: string[];
   solution?: VideoRenderingThread_Solution | undefined;
   validations: VideoRenderingThread_Validation[];
+  averageRenderSeconds: Long;
 }
 
 export interface VideoRenderingThread_Solution {
@@ -896,6 +897,7 @@ function createBaseVideoRenderingThread(): VideoRenderingThread {
     workers: [],
     solution: undefined,
     validations: [],
+    averageRenderSeconds: Long.ZERO,
   };
 }
 
@@ -924,6 +926,9 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
     }
     for (const v of message.validations) {
       VideoRenderingThread_Validation.encode(v!, writer.uint32(66).fork()).join();
+    }
+    if (!message.averageRenderSeconds.equals(Long.ZERO)) {
+      writer.uint32(72).int64(message.averageRenderSeconds.toString());
     }
     return writer;
   },
@@ -999,6 +1004,14 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
           message.validations.push(VideoRenderingThread_Validation.decode(reader, reader.uint32()));
           continue;
         }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.averageRenderSeconds = Long.fromString(reader.int64().toString());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1020,6 +1033,9 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
       validations: globalThis.Array.isArray(object?.validations)
         ? object.validations.map((e: any) => VideoRenderingThread_Validation.fromJSON(e))
         : [],
+      averageRenderSeconds: isSet(object.averageRenderSeconds)
+        ? Long.fromValue(object.averageRenderSeconds)
+        : Long.ZERO,
     };
   },
 
@@ -1049,6 +1065,9 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
     if (message.validations?.length) {
       obj.validations = message.validations.map((e) => VideoRenderingThread_Validation.toJSON(e));
     }
+    if (!message.averageRenderSeconds.equals(Long.ZERO)) {
+      obj.averageRenderSeconds = (message.averageRenderSeconds || Long.ZERO).toString();
+    }
     return obj;
   },
 
@@ -1071,6 +1090,9 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
       ? VideoRenderingThread_Solution.fromPartial(object.solution)
       : undefined;
     message.validations = object.validations?.map((e) => VideoRenderingThread_Validation.fromPartial(e)) || [];
+    message.averageRenderSeconds = (object.averageRenderSeconds !== undefined && object.averageRenderSeconds !== null)
+      ? Long.fromValue(object.averageRenderSeconds)
+      : Long.ZERO;
     return message;
   },
 };
