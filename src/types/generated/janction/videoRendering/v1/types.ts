@@ -50,6 +50,7 @@ export interface Worker_Reputation {
   validations: number;
   solutions: number;
   winnings?: Coin | undefined;
+  renderDurations: Long[];
 }
 
 /**
@@ -556,7 +557,14 @@ export const Worker: MessageFns<Worker> = {
 };
 
 function createBaseWorker_Reputation(): Worker_Reputation {
-  return { staked: undefined, points: Long.ZERO, validations: 0, solutions: 0, winnings: undefined };
+  return {
+    staked: undefined,
+    points: Long.ZERO,
+    validations: 0,
+    solutions: 0,
+    winnings: undefined,
+    renderDurations: [],
+  };
 }
 
 export const Worker_Reputation: MessageFns<Worker_Reputation> = {
@@ -576,6 +584,11 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
     if (message.winnings !== undefined) {
       Coin.encode(message.winnings, writer.uint32(42).fork()).join();
     }
+    writer.uint32(50).fork();
+    for (const v of message.renderDurations) {
+      writer.int64(v.toString());
+    }
+    writer.join();
     return writer;
   },
 
@@ -626,6 +639,24 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
           message.winnings = Coin.decode(reader, reader.uint32());
           continue;
         }
+        case 6: {
+          if (tag === 48) {
+            message.renderDurations.push(Long.fromString(reader.int64().toString()));
+
+            continue;
+          }
+
+          if (tag === 50) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.renderDurations.push(Long.fromString(reader.int64().toString()));
+            }
+
+            continue;
+          }
+
+          break;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -642,6 +673,9 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
       validations: isSet(object.validations) ? globalThis.Number(object.validations) : 0,
       solutions: isSet(object.solutions) ? globalThis.Number(object.solutions) : 0,
       winnings: isSet(object.winnings) ? Coin.fromJSON(object.winnings) : undefined,
+      renderDurations: globalThis.Array.isArray(object?.renderDurations)
+        ? object.renderDurations.map((e: any) => Long.fromValue(e))
+        : [],
     };
   },
 
@@ -662,6 +696,9 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
     if (message.winnings !== undefined) {
       obj.winnings = Coin.toJSON(message.winnings);
     }
+    if (message.renderDurations?.length) {
+      obj.renderDurations = message.renderDurations.map((e) => (e || Long.ZERO).toString());
+    }
     return obj;
   },
 
@@ -681,6 +718,7 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
     message.winnings = (object.winnings !== undefined && object.winnings !== null)
       ? Coin.fromPartial(object.winnings)
       : undefined;
+    message.renderDurations = object.renderDurations?.map((e) => Long.fromValue(e)) || [];
     return message;
   },
 };
