@@ -5,7 +5,7 @@
 // source: cosmos/base/v1beta1/coin.proto
 
 /* eslint-disable */
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { Reader, Writer } from "protobufjs";
 import Long from "long";
 
 export const protobufPackage = "cosmos.base.v1beta1";
@@ -37,7 +37,7 @@ function createBaseCoin(): Coin {
 }
 
 export const Coin: MessageFns<Coin> = {
-  encode(message: Coin, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: Coin, writer: Writer = new Writer()): Writer {
     if (message.denom !== "") {
       writer.uint32(10).string(message.denom);
     }
@@ -47,8 +47,8 @@ export const Coin: MessageFns<Coin> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): Coin {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): Coin {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseCoin();
     while (reader.pos < end) {
@@ -113,7 +113,7 @@ function createBaseDecCoin(): DecCoin {
 }
 
 export const DecCoin: MessageFns<DecCoin> = {
-  encode(message: DecCoin, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: DecCoin, writer: Writer = new Writer()): Writer {
     if (message.denom !== "") {
       writer.uint32(10).string(message.denom);
     }
@@ -123,8 +123,8 @@ export const DecCoin: MessageFns<DecCoin> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): DecCoin {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): DecCoin {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseDecCoin();
     while (reader.pos < end) {
@@ -201,8 +201,8 @@ function isSet(value: any): boolean {
 }
 
 export interface MessageFns<T> {
-  encode(message: T, writer?: BinaryWriter): BinaryWriter;
-  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  encode(message: T, writer?: Writer): Writer;
+  decode(input: Reader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
   toJSON(message: T): unknown;
   create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;

@@ -6,6 +6,7 @@ import {
     SigningStargateClient,
     SigningStargateClientOptions,
     StdFee,
+    coin
 } from "@cosmjs/stargate"
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc"
 import Long from "long"
@@ -15,6 +16,9 @@ import {
     MsgCreateVideoRenderingTaskEncodeObject,
     typeUrlMsgCreateVideoRenderingTask,
 } from "./modules/messages"
+
+console.log(">>> SigningStargateClient is", SigningStargateClient);
+
 
 export const videoRenderingDefaultRegistryTypes: ReadonlyArray<[string, GeneratedType]> = [
     ...defaultRegistryTypes,
@@ -27,6 +31,7 @@ function createDefaultRegistry(): Registry {
     registry.register(videoRenderingTypes[1][0],videoRenderingTypes[1][1]  );
     return registry
 }
+
 
 export class VideoRenderingSigningStargateClient extends SigningStargateClient {
     public readonly checkersQueryClient: VideoRenderingExtension | undefined
@@ -63,6 +68,7 @@ export class VideoRenderingSigningStargateClient extends SigningStargateClient {
         reward: Long,
         fee: number | StdFee | "auto"
     ): Promise<DeliverTxResponse> {
+        const rewardCoin = coin(reward.toString(), "JCT");  // wrap Long
         const createMsg: MsgCreateVideoRenderingTaskEncodeObject = {
             typeUrl: typeUrlMsgCreateVideoRenderingTask,
             value: {
@@ -71,7 +77,7 @@ export class VideoRenderingSigningStargateClient extends SigningStargateClient {
                 startFrame: startFrame,
                 endFrame: endFrame,
                 threads: threads,
-                reward: reward,
+                reward: rewardCoin,
                 
             },
         }

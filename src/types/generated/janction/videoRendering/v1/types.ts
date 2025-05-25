@@ -5,7 +5,7 @@
 // source: janction/videoRendering/v1/types.proto
 
 /* eslint-disable */
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { Reader, Writer } from "protobufjs";
 import Long from "long";
 import { Coin } from "../../../cosmos/base/v1beta1/coin";
 
@@ -179,9 +179,9 @@ function createBaseParams(): Params {
 }
 
 export const Params: MessageFns<Params> = {
-  encode(message: Params, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: Params, writer: Writer = new Writer()): Writer {
     if (message.minWorkerStaking !== undefined) {
-      Coin.encode(message.minWorkerStaking, writer.uint32(10).fork()).join();
+      Coin.encode(message.minWorkerStaking, writer.uint32(10).fork());
     }
     if (!message.maxWorkersPerThread.equals(Long.ZERO)) {
       writer.uint32(16).int64(message.maxWorkersPerThread.toString());
@@ -192,8 +192,8 @@ export const Params: MessageFns<Params> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): Params {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): Params {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseParams();
     while (reader.pos < end) {
@@ -277,24 +277,24 @@ function createBaseGenesisState(): GenesisState {
 }
 
 export const GenesisState: MessageFns<GenesisState> = {
-  encode(message: GenesisState, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: GenesisState, writer: Writer = new Writer()): Writer {
     if (message.params !== undefined) {
-      Params.encode(message.params, writer.uint32(10).fork()).join();
+      Params.encode(message.params, writer.uint32(10).fork());
     }
     if (message.videoRenderingTaskInfo !== undefined) {
-      VideoRenderingTaskInfo.encode(message.videoRenderingTaskInfo, writer.uint32(26).fork()).join();
+      VideoRenderingTaskInfo.encode(message.videoRenderingTaskInfo, writer.uint32(26).fork());
     }
     for (const v of message.videoRenderingTaskList) {
-      IndexedVideoRenderingTask.encode(v!, writer.uint32(34).fork()).join();
+      IndexedVideoRenderingTask.encode(v!, writer.uint32(34).fork());
     }
     for (const v of message.workers) {
-      Worker.encode(v!, writer.uint32(42).fork()).join();
+      Worker.encode(v!, writer.uint32(42).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): GenesisState {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): GenesisState {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseGenesisState();
     while (reader.pos < end) {
@@ -403,12 +403,12 @@ function createBaseWorker(): Worker {
 }
 
 export const Worker: MessageFns<Worker> = {
-  encode(message: Worker, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: Worker, writer: Writer = new Writer()): Writer {
     if (message.address !== "") {
       writer.uint32(10).string(message.address);
     }
     if (message.reputation !== undefined) {
-      Worker_Reputation.encode(message.reputation, writer.uint32(26).fork()).join();
+      Worker_Reputation.encode(message.reputation, writer.uint32(26).fork());
     }
     if (message.enabled !== false) {
       writer.uint32(32).bool(message.enabled);
@@ -428,8 +428,8 @@ export const Worker: MessageFns<Worker> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): Worker {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): Worker {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWorker();
     while (reader.pos < end) {
@@ -568,9 +568,9 @@ function createBaseWorker_Reputation(): Worker_Reputation {
 }
 
 export const Worker_Reputation: MessageFns<Worker_Reputation> = {
-  encode(message: Worker_Reputation, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: Worker_Reputation, writer: Writer = new Writer()): Writer {
     if (message.staked !== undefined) {
-      Coin.encode(message.staked, writer.uint32(10).fork()).join();
+      Coin.encode(message.staked, writer.uint32(10).fork());
     }
     if (!message.points.equals(Long.ZERO)) {
       writer.uint32(16).int64(message.points.toString());
@@ -582,18 +582,18 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
       writer.uint32(32).int32(message.solutions);
     }
     if (message.winnings !== undefined) {
-      Coin.encode(message.winnings, writer.uint32(42).fork()).join();
+      Coin.encode(message.winnings, writer.uint32(42).fork());
     }
     writer.uint32(50).fork();
     for (const v of message.renderDurations) {
       writer.int64(v.toString());
     }
-    writer.join();
+    writer;
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): Worker_Reputation {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): Worker_Reputation {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWorker_Reputation();
     while (reader.pos < end) {
@@ -738,7 +738,7 @@ function createBaseVideoRenderingTask(): VideoRenderingTask {
 }
 
 export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
-  encode(message: VideoRenderingTask, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingTask, writer: Writer = new Writer()): Writer {
     if (message.taskId !== "") {
       writer.uint32(10).string(message.taskId);
     }
@@ -761,16 +761,16 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
       writer.uint32(56).bool(message.completed);
     }
     if (message.reward !== undefined) {
-      Coin.encode(message.reward, writer.uint32(66).fork()).join();
+      Coin.encode(message.reward, writer.uint32(66).fork());
     }
     for (const v of message.threads) {
-      VideoRenderingThread.encode(v!, writer.uint32(74).fork()).join();
+      VideoRenderingThread.encode(v!, writer.uint32(74).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingTask {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingTask {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingTask();
     while (reader.pos < end) {
@@ -940,7 +940,7 @@ function createBaseVideoRenderingThread(): VideoRenderingThread {
 }
 
 export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
-  encode(message: VideoRenderingThread, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingThread, writer: Writer = new Writer()): Writer {
     if (message.threadId !== "") {
       writer.uint32(10).string(message.threadId);
     }
@@ -960,10 +960,10 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
       writer.uint32(50).string(v!);
     }
     if (message.solution !== undefined) {
-      VideoRenderingThread_Solution.encode(message.solution, writer.uint32(58).fork()).join();
+      VideoRenderingThread_Solution.encode(message.solution, writer.uint32(58).fork());
     }
     for (const v of message.validations) {
-      VideoRenderingThread_Validation.encode(v!, writer.uint32(66).fork()).join();
+      VideoRenderingThread_Validation.encode(v!, writer.uint32(66).fork());
     }
     if (!message.averageRenderSeconds.equals(Long.ZERO)) {
       writer.uint32(72).int64(message.averageRenderSeconds.toString());
@@ -971,8 +971,8 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingThread {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingThread {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingThread();
     while (reader.pos < end) {
@@ -1140,12 +1140,12 @@ function createBaseVideoRenderingThread_Solution(): VideoRenderingThread_Solutio
 }
 
 export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solution> = {
-  encode(message: VideoRenderingThread_Solution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingThread_Solution, writer: Writer = new Writer()): Writer {
     if (message.proposedBy !== "") {
       writer.uint32(10).string(message.proposedBy);
     }
     for (const v of message.frames) {
-      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork()).join();
+      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork());
     }
     if (message.publicKey !== "") {
       writer.uint32(26).string(message.publicKey);
@@ -1159,8 +1159,8 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingThread_Solution {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingThread_Solution {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingThread_Solution();
     while (reader.pos < end) {
@@ -1268,12 +1268,12 @@ function createBaseVideoRenderingThread_Validation(): VideoRenderingThread_Valid
 }
 
 export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Validation> = {
-  encode(message: VideoRenderingThread_Validation, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingThread_Validation, writer: Writer = new Writer()): Writer {
     if (message.validator !== "") {
       writer.uint32(10).string(message.validator);
     }
     for (const v of message.frames) {
-      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork()).join();
+      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork());
     }
     if (message.publicKey !== "") {
       writer.uint32(26).string(message.publicKey);
@@ -1284,8 +1284,8 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingThread_Validation {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingThread_Validation {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingThread_Validation();
     while (reader.pos < end) {
@@ -1380,7 +1380,7 @@ function createBaseVideoRenderingThread_Frame(): VideoRenderingThread_Frame {
 }
 
 export const VideoRenderingThread_Frame: MessageFns<VideoRenderingThread_Frame> = {
-  encode(message: VideoRenderingThread_Frame, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingThread_Frame, writer: Writer = new Writer()): Writer {
     if (message.filename !== "") {
       writer.uint32(10).string(message.filename);
     }
@@ -1402,8 +1402,8 @@ export const VideoRenderingThread_Frame: MessageFns<VideoRenderingThread_Frame> 
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingThread_Frame {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingThread_Frame {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingThread_Frame();
     while (reader.pos < end) {
@@ -1524,15 +1524,15 @@ function createBaseVideoRenderingTaskInfo(): VideoRenderingTaskInfo {
 }
 
 export const VideoRenderingTaskInfo: MessageFns<VideoRenderingTaskInfo> = {
-  encode(message: VideoRenderingTaskInfo, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingTaskInfo, writer: Writer = new Writer()): Writer {
     if (!message.nextId.equals(Long.ZERO)) {
       writer.uint32(8).int64(message.nextId.toString());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingTaskInfo {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingTaskInfo {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingTaskInfo();
     while (reader.pos < end) {
@@ -1584,18 +1584,18 @@ function createBaseIndexedVideoRenderingTask(): IndexedVideoRenderingTask {
 }
 
 export const IndexedVideoRenderingTask: MessageFns<IndexedVideoRenderingTask> = {
-  encode(message: IndexedVideoRenderingTask, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: IndexedVideoRenderingTask, writer: Writer = new Writer()): Writer {
     if (message.index !== "") {
       writer.uint32(10).string(message.index);
     }
     if (message.videoRenderingTask !== undefined) {
-      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(18).fork()).join();
+      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(18).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): IndexedVideoRenderingTask {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): IndexedVideoRenderingTask {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseIndexedVideoRenderingTask();
     while (reader.pos < end) {
@@ -1664,18 +1664,18 @@ function createBaseVideoRenderingLogs(): VideoRenderingLogs {
 }
 
 export const VideoRenderingLogs: MessageFns<VideoRenderingLogs> = {
-  encode(message: VideoRenderingLogs, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingLogs, writer: Writer = new Writer()): Writer {
     if (message.threadId !== "") {
       writer.uint32(10).string(message.threadId);
     }
     for (const v of message.logs) {
-      VideoRenderingLogs_VideoRenderingLog.encode(v!, writer.uint32(18).fork()).join();
+      VideoRenderingLogs_VideoRenderingLog.encode(v!, writer.uint32(18).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingLogs {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingLogs {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingLogs();
     while (reader.pos < end) {
@@ -1742,7 +1742,7 @@ function createBaseVideoRenderingLogs_VideoRenderingLog(): VideoRenderingLogs_Vi
 }
 
 export const VideoRenderingLogs_VideoRenderingLog: MessageFns<VideoRenderingLogs_VideoRenderingLog> = {
-  encode(message: VideoRenderingLogs_VideoRenderingLog, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: VideoRenderingLogs_VideoRenderingLog, writer: Writer = new Writer()): Writer {
     if (message.log !== "") {
       writer.uint32(18).string(message.log);
     }
@@ -1755,8 +1755,8 @@ export const VideoRenderingLogs_VideoRenderingLog: MessageFns<VideoRenderingLogs
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): VideoRenderingLogs_VideoRenderingLog {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): VideoRenderingLogs_VideoRenderingLog {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVideoRenderingLogs_VideoRenderingLog();
     while (reader.pos < end) {
@@ -1852,8 +1852,8 @@ function isSet(value: any): boolean {
 }
 
 export interface MessageFns<T> {
-  encode(message: T, writer?: BinaryWriter): BinaryWriter;
-  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  encode(message: T, writer?: Writer): Writer;
+  decode(input: Reader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
   toJSON(message: T): unknown;
   create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;

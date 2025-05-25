@@ -5,7 +5,7 @@
 // source: janction/videoRendering/v1/query.proto
 
 /* eslint-disable */
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { Reader, Writer } from "protobufjs";
 import Long from "long";
 import { VideoRenderingLogs, VideoRenderingTask, Worker } from "./types";
 
@@ -65,15 +65,15 @@ function createBaseQueryGetVideoRenderingTaskRequest(): QueryGetVideoRenderingTa
 }
 
 export const QueryGetVideoRenderingTaskRequest: MessageFns<QueryGetVideoRenderingTaskRequest> = {
-  encode(message: QueryGetVideoRenderingTaskRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: QueryGetVideoRenderingTaskRequest, writer: Writer = new Writer()): Writer {
     if (message.index !== "") {
       writer.uint32(10).string(message.index);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetVideoRenderingTaskRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetVideoRenderingTaskRequest {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetVideoRenderingTaskRequest();
     while (reader.pos < end) {
@@ -127,15 +127,15 @@ function createBaseQueryGetVideoRenderingTaskResponse(): QueryGetVideoRenderingT
 }
 
 export const QueryGetVideoRenderingTaskResponse: MessageFns<QueryGetVideoRenderingTaskResponse> = {
-  encode(message: QueryGetVideoRenderingTaskResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: QueryGetVideoRenderingTaskResponse, writer: Writer = new Writer()): Writer {
     if (message.videoRenderingTask !== undefined) {
-      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(10).fork()).join();
+      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(10).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetVideoRenderingTaskResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetVideoRenderingTaskResponse {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetVideoRenderingTaskResponse();
     while (reader.pos < end) {
@@ -195,15 +195,15 @@ function createBaseQueryGetVideoRenderingLogsRequest(): QueryGetVideoRenderingLo
 }
 
 export const QueryGetVideoRenderingLogsRequest: MessageFns<QueryGetVideoRenderingLogsRequest> = {
-  encode(message: QueryGetVideoRenderingLogsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: QueryGetVideoRenderingLogsRequest, writer: Writer = new Writer()): Writer {
     if (message.threadId !== "") {
       writer.uint32(10).string(message.threadId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetVideoRenderingLogsRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetVideoRenderingLogsRequest {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetVideoRenderingLogsRequest();
     while (reader.pos < end) {
@@ -257,15 +257,15 @@ function createBaseQueryGetVideoRenderingLogsResponse(): QueryGetVideoRenderingL
 }
 
 export const QueryGetVideoRenderingLogsResponse: MessageFns<QueryGetVideoRenderingLogsResponse> = {
-  encode(message: QueryGetVideoRenderingLogsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: QueryGetVideoRenderingLogsResponse, writer: Writer = new Writer()): Writer {
     if (message.videoRenderingLogs !== undefined) {
-      VideoRenderingLogs.encode(message.videoRenderingLogs, writer.uint32(10).fork()).join();
+      VideoRenderingLogs.encode(message.videoRenderingLogs, writer.uint32(10).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetVideoRenderingLogsResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetVideoRenderingLogsResponse {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetVideoRenderingLogsResponse();
     while (reader.pos < end) {
@@ -325,12 +325,12 @@ function createBaseQueryGetPendingVideoRenderingTaskRequest(): QueryGetPendingVi
 }
 
 export const QueryGetPendingVideoRenderingTaskRequest: MessageFns<QueryGetPendingVideoRenderingTaskRequest> = {
-  encode(_: QueryGetPendingVideoRenderingTaskRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(_: QueryGetPendingVideoRenderingTaskRequest, writer: Writer = new Writer()): Writer {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetPendingVideoRenderingTaskRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetPendingVideoRenderingTaskRequest {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetPendingVideoRenderingTaskRequest();
     while (reader.pos < end) {
@@ -372,15 +372,15 @@ function createBaseQueryGetPendingVideoRenderingTaskResponse(): QueryGetPendingV
 }
 
 export const QueryGetPendingVideoRenderingTaskResponse: MessageFns<QueryGetPendingVideoRenderingTaskResponse> = {
-  encode(message: QueryGetPendingVideoRenderingTaskResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: QueryGetPendingVideoRenderingTaskResponse, writer: Writer = new Writer()): Writer {
     for (const v of message.videoRenderingTasks) {
-      VideoRenderingTask.encode(v!, writer.uint32(10).fork()).join();
+      VideoRenderingTask.encode(v!, writer.uint32(10).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetPendingVideoRenderingTaskResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetPendingVideoRenderingTaskResponse {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetPendingVideoRenderingTaskResponse();
     while (reader.pos < end) {
@@ -438,15 +438,15 @@ function createBaseQueryGetWorkerRequest(): QueryGetWorkerRequest {
 }
 
 export const QueryGetWorkerRequest: MessageFns<QueryGetWorkerRequest> = {
-  encode(message: QueryGetWorkerRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: QueryGetWorkerRequest, writer: Writer = new Writer()): Writer {
     if (message.worker !== "") {
       writer.uint32(10).string(message.worker);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetWorkerRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetWorkerRequest {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetWorkerRequest();
     while (reader.pos < end) {
@@ -496,15 +496,15 @@ function createBaseQueryGetWorkerResponse(): QueryGetWorkerResponse {
 }
 
 export const QueryGetWorkerResponse: MessageFns<QueryGetWorkerResponse> = {
-  encode(message: QueryGetWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: QueryGetWorkerResponse, writer: Writer = new Writer()): Writer {
     if (message.worker !== undefined) {
-      Worker.encode(message.worker, writer.uint32(10).fork()).join();
+      Worker.encode(message.worker, writer.uint32(10).fork());
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetWorkerResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: Reader | Uint8Array, length?: number): QueryGetWorkerResponse {
+    const reader = input instanceof Reader ? input : new Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseQueryGetWorkerResponse();
     while (reader.pos < end) {
@@ -577,19 +577,19 @@ export class QueryClientImpl implements Query {
   GetVideoRenderingTask(request: QueryGetVideoRenderingTaskRequest): Promise<QueryGetVideoRenderingTaskResponse> {
     const data = QueryGetVideoRenderingTaskRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "GetVideoRenderingTask", data);
-    return promise.then((data) => QueryGetVideoRenderingTaskResponse.decode(new BinaryReader(data)));
+    return promise.then((data) => QueryGetVideoRenderingTaskResponse.decode(new Reader(data)));
   }
 
   GetVideoRenderingLogs(request: QueryGetVideoRenderingLogsRequest): Promise<QueryGetVideoRenderingLogsResponse> {
     const data = QueryGetVideoRenderingLogsRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "GetVideoRenderingLogs", data);
-    return promise.then((data) => QueryGetVideoRenderingLogsResponse.decode(new BinaryReader(data)));
+    return promise.then((data) => QueryGetVideoRenderingLogsResponse.decode(new Reader(data)));
   }
 
   GetWorker(request: QueryGetWorkerRequest): Promise<QueryGetWorkerResponse> {
     const data = QueryGetWorkerRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "GetWorker", data);
-    return promise.then((data) => QueryGetWorkerResponse.decode(new BinaryReader(data)));
+    return promise.then((data) => QueryGetWorkerResponse.decode(new Reader(data)));
   }
 
   GetPendingVideoRenderingTasks(
@@ -597,7 +597,7 @@ export class QueryClientImpl implements Query {
   ): Promise<QueryGetPendingVideoRenderingTaskResponse> {
     const data = QueryGetPendingVideoRenderingTaskRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "GetPendingVideoRenderingTasks", data);
-    return promise.then((data) => QueryGetPendingVideoRenderingTaskResponse.decode(new BinaryReader(data)));
+    return promise.then((data) => QueryGetPendingVideoRenderingTaskResponse.decode(new Reader(data)));
   }
 }
 
@@ -622,8 +622,8 @@ function isSet(value: any): boolean {
 }
 
 export interface MessageFns<T> {
-  encode(message: T, writer?: BinaryWriter): BinaryWriter;
-  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  encode(message: T, writer?: Writer): Writer;
+  decode(input: Reader | Uint8Array, length?: number): T;
   fromJSON(object: any): T;
   toJSON(message: T): unknown;
   create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
