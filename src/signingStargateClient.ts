@@ -17,8 +17,6 @@ import {
     typeUrlMsgCreateVideoRenderingTask,
 } from "./modules/messages"
 
-console.log(">>> SigningStargateClient is", SigningStargateClient);
-
 
 export const videoRenderingDefaultRegistryTypes: ReadonlyArray<[string, GeneratedType]> = [
     ...defaultRegistryTypes,

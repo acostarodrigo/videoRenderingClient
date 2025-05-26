@@ -46,14 +46,8 @@ describe("VideoRenderingTask Action", function () {
             Long.fromNumber(100),
             "auto",
         )
-        console.log('====================================');
-        console.log('response', response);
-        console.log('====================================');
         const logs: Log[] = JSON.parse(response.rawLog!)
         expect(logs).to.be.length(1)
-        console.log('====================================');
-        console.log(logs[0]);
-        console.log('====================================');
         
     })
 
