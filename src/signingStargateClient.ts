@@ -8,6 +8,7 @@ import {
     StdFee,
     coin
 } from "@cosmjs/stargate"
+import { toHex }  from "@cosmjs/encoding";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc"
 import Long from "long"
 import { VideoRenderingExtension, setupVideoRenderingExtension } from "./modules/queries"
@@ -16,6 +17,8 @@ import {
     MsgCreateVideoRenderingTaskEncodeObject,
     typeUrlMsgCreateVideoRenderingTask,
 } from "./modules/messages"
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { MsgCreateVideoRenderingTask } from "./types/generated/janction/videoRendering/v1/tx";
 
 
 export const videoRenderingDefaultRegistryTypes: ReadonlyArray<[string, GeneratedType]> = [
@@ -66,20 +69,25 @@ export class VideoRenderingSigningStargateClient extends SigningStargateClient {
         reward: Long,
         fee: number | StdFee | "auto"
     ): Promise<DeliverTxResponse> {
-        const rewardCoin = coin(reward.toString(), "JCT");  // wrap Long
-        const createMsg: MsgCreateVideoRenderingTaskEncodeObject = {
+        const rewardCoin = coin(reward.toString(), "jct");  // wrap Long
+        const msgValue = MsgCreateVideoRenderingTask.fromPartial({
+            creator,
+            cid,
+            startFrame: startFrame,
+            endFrame:   endFrame,
+            threads:    threads,
+            reward:     rewardCoin
+          });
+      
+          const createMsg = {
             typeUrl: typeUrlMsgCreateVideoRenderingTask,
-            value: {
-                creator: creator,
-                 cid: cid,
-                startFrame: startFrame,
-                endFrame: endFrame,
-                threads: threads,
-                reward: rewardCoin,
-                
-            },
-        }
-        return this.signAndBroadcast(creator, [createMsg],fee)
+            value:   msgValue,
+          };
+          const feeObj: StdFee = { 
+            amount: [coin("1000000", "jct")], 
+            gas:    "200000" 
+          };
+          return this.signAndBroadcast(creator, [createMsg], feeObj);
     }
 
     

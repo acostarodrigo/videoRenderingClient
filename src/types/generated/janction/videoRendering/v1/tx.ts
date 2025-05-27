@@ -5,7 +5,7 @@
 // source: janction/videoRendering/v1/tx.proto
 
 /* eslint-disable */
-import { Reader, Writer } from "protobufjs";
+import { Reader, Writer } from "protobufjs/minimal";
 import Long from "long";
 import { Coin } from "../../../cosmos/base/v1beta1/coin";
 
@@ -124,7 +124,7 @@ export const MsgCreateVideoRenderingTask: MessageFns<MsgCreateVideoRenderingTask
       writer.uint32(40).int32(message.threads);
     }
     if (message.reward !== undefined) {
-      Coin.encode(message.reward, writer.uint32(50).fork());
+      Coin.encode(message.reward, writer.uint32(50).fork()).ldelim();
     }
     return writer;
   },
@@ -322,7 +322,7 @@ export const MsgAddWorker: MessageFns<MsgAddWorker> = {
       writer.uint32(26).string(message.ipfsId);
     }
     if (message.stake !== undefined) {
-      Coin.encode(message.stake, writer.uint32(34).fork());
+      Coin.encode(message.stake, writer.uint32(34).fork()).ldelim();
     }
     return writer;
   },

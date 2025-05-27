@@ -5,7 +5,7 @@
 // source: janction/videoRendering/v1/query.proto
 
 /* eslint-disable */
-import { Reader, Writer } from "protobufjs";
+import { Reader, Writer } from "protobufjs/minimal";
 import Long from "long";
 import { VideoRenderingLogs, VideoRenderingTask, Worker } from "./types";
 
@@ -129,7 +129,7 @@ function createBaseQueryGetVideoRenderingTaskResponse(): QueryGetVideoRenderingT
 export const QueryGetVideoRenderingTaskResponse: MessageFns<QueryGetVideoRenderingTaskResponse> = {
   encode(message: QueryGetVideoRenderingTaskResponse, writer: Writer = new Writer()): Writer {
     if (message.videoRenderingTask !== undefined) {
-      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(10).fork());
+      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
@@ -259,7 +259,7 @@ function createBaseQueryGetVideoRenderingLogsResponse(): QueryGetVideoRenderingL
 export const QueryGetVideoRenderingLogsResponse: MessageFns<QueryGetVideoRenderingLogsResponse> = {
   encode(message: QueryGetVideoRenderingLogsResponse, writer: Writer = new Writer()): Writer {
     if (message.videoRenderingLogs !== undefined) {
-      VideoRenderingLogs.encode(message.videoRenderingLogs, writer.uint32(10).fork());
+      VideoRenderingLogs.encode(message.videoRenderingLogs, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
@@ -374,7 +374,7 @@ function createBaseQueryGetPendingVideoRenderingTaskResponse(): QueryGetPendingV
 export const QueryGetPendingVideoRenderingTaskResponse: MessageFns<QueryGetPendingVideoRenderingTaskResponse> = {
   encode(message: QueryGetPendingVideoRenderingTaskResponse, writer: Writer = new Writer()): Writer {
     for (const v of message.videoRenderingTasks) {
-      VideoRenderingTask.encode(v!, writer.uint32(10).fork());
+      VideoRenderingTask.encode(v!, writer.uint32(10).fork()).ldelim()
     }
     return writer;
   },
@@ -498,7 +498,7 @@ function createBaseQueryGetWorkerResponse(): QueryGetWorkerResponse {
 export const QueryGetWorkerResponse: MessageFns<QueryGetWorkerResponse> = {
   encode(message: QueryGetWorkerResponse, writer: Writer = new Writer()): Writer {
     if (message.worker !== undefined) {
-      Worker.encode(message.worker, writer.uint32(10).fork());
+      Worker.encode(message.worker, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },

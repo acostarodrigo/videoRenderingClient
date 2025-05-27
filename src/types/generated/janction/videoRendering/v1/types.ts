@@ -5,7 +5,7 @@
 // source: janction/videoRendering/v1/types.proto
 
 /* eslint-disable */
-import { Reader, Writer } from "protobufjs";
+import { Reader, Writer } from "protobufjs/minimal";
 import Long from "long";
 import { Coin } from "../../../cosmos/base/v1beta1/coin";
 
@@ -181,7 +181,7 @@ function createBaseParams(): Params {
 export const Params: MessageFns<Params> = {
   encode(message: Params, writer: Writer = new Writer()): Writer {
     if (message.minWorkerStaking !== undefined) {
-      Coin.encode(message.minWorkerStaking, writer.uint32(10).fork());
+      Coin.encode(message.minWorkerStaking, writer.uint32(10).fork()).ldelim();
     }
     if (!message.maxWorkersPerThread.equals(Long.ZERO)) {
       writer.uint32(16).int64(message.maxWorkersPerThread.toString());
@@ -279,16 +279,16 @@ function createBaseGenesisState(): GenesisState {
 export const GenesisState: MessageFns<GenesisState> = {
   encode(message: GenesisState, writer: Writer = new Writer()): Writer {
     if (message.params !== undefined) {
-      Params.encode(message.params, writer.uint32(10).fork());
+      Params.encode(message.params, writer.uint32(10).fork()).ldelim();
     }
     if (message.videoRenderingTaskInfo !== undefined) {
-      VideoRenderingTaskInfo.encode(message.videoRenderingTaskInfo, writer.uint32(26).fork());
+      VideoRenderingTaskInfo.encode(message.videoRenderingTaskInfo, writer.uint32(26).fork()).ldelim();
     }
     for (const v of message.videoRenderingTaskList) {
-      IndexedVideoRenderingTask.encode(v!, writer.uint32(34).fork());
+      IndexedVideoRenderingTask.encode(v!, writer.uint32(34).fork()).ldelim();
     }
     for (const v of message.workers) {
-      Worker.encode(v!, writer.uint32(42).fork());
+      Worker.encode(v!, writer.uint32(42).fork()).ldelim();
     }
     return writer;
   },
@@ -408,7 +408,7 @@ export const Worker: MessageFns<Worker> = {
       writer.uint32(10).string(message.address);
     }
     if (message.reputation !== undefined) {
-      Worker_Reputation.encode(message.reputation, writer.uint32(26).fork());
+      Worker_Reputation.encode(message.reputation, writer.uint32(26).fork()).ldelim();
     }
     if (message.enabled !== false) {
       writer.uint32(32).bool(message.enabled);
@@ -570,7 +570,7 @@ function createBaseWorker_Reputation(): Worker_Reputation {
 export const Worker_Reputation: MessageFns<Worker_Reputation> = {
   encode(message: Worker_Reputation, writer: Writer = new Writer()): Writer {
     if (message.staked !== undefined) {
-      Coin.encode(message.staked, writer.uint32(10).fork());
+      Coin.encode(message.staked, writer.uint32(10).fork()).ldelim();
     }
     if (!message.points.equals(Long.ZERO)) {
       writer.uint32(16).int64(message.points.toString());
@@ -582,9 +582,9 @@ export const Worker_Reputation: MessageFns<Worker_Reputation> = {
       writer.uint32(32).int32(message.solutions);
     }
     if (message.winnings !== undefined) {
-      Coin.encode(message.winnings, writer.uint32(42).fork());
+      Coin.encode(message.winnings, writer.uint32(42).fork()).ldelim();
     }
-    writer.uint32(50).fork();
+    writer.uint32(50).fork().ldelim();
     for (const v of message.renderDurations) {
       writer.int64(v.toString());
     }
@@ -761,10 +761,10 @@ export const VideoRenderingTask: MessageFns<VideoRenderingTask> = {
       writer.uint32(56).bool(message.completed);
     }
     if (message.reward !== undefined) {
-      Coin.encode(message.reward, writer.uint32(66).fork());
+      Coin.encode(message.reward, writer.uint32(66).fork()).ldelim();
     }
     for (const v of message.threads) {
-      VideoRenderingThread.encode(v!, writer.uint32(74).fork());
+      VideoRenderingThread.encode(v!, writer.uint32(74).fork()).ldelim();
     }
     return writer;
   },
@@ -960,10 +960,10 @@ export const VideoRenderingThread: MessageFns<VideoRenderingThread> = {
       writer.uint32(50).string(v!);
     }
     if (message.solution !== undefined) {
-      VideoRenderingThread_Solution.encode(message.solution, writer.uint32(58).fork());
+      VideoRenderingThread_Solution.encode(message.solution, writer.uint32(58).fork()).ldelim();
     }
     for (const v of message.validations) {
-      VideoRenderingThread_Validation.encode(v!, writer.uint32(66).fork());
+      VideoRenderingThread_Validation.encode(v!, writer.uint32(66).fork()).ldelim();
     }
     if (!message.averageRenderSeconds.equals(Long.ZERO)) {
       writer.uint32(72).int64(message.averageRenderSeconds.toString());
@@ -1145,7 +1145,7 @@ export const VideoRenderingThread_Solution: MessageFns<VideoRenderingThread_Solu
       writer.uint32(10).string(message.proposedBy);
     }
     for (const v of message.frames) {
-      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork());
+      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork()).ldelim();
     }
     if (message.publicKey !== "") {
       writer.uint32(26).string(message.publicKey);
@@ -1273,7 +1273,7 @@ export const VideoRenderingThread_Validation: MessageFns<VideoRenderingThread_Va
       writer.uint32(10).string(message.validator);
     }
     for (const v of message.frames) {
-      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork());
+      VideoRenderingThread_Frame.encode(v!, writer.uint32(18).fork()).ldelim();
     }
     if (message.publicKey !== "") {
       writer.uint32(26).string(message.publicKey);
@@ -1589,7 +1589,7 @@ export const IndexedVideoRenderingTask: MessageFns<IndexedVideoRenderingTask> = 
       writer.uint32(10).string(message.index);
     }
     if (message.videoRenderingTask !== undefined) {
-      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(18).fork());
+      VideoRenderingTask.encode(message.videoRenderingTask, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -1669,7 +1669,7 @@ export const VideoRenderingLogs: MessageFns<VideoRenderingLogs> = {
       writer.uint32(10).string(message.threadId);
     }
     for (const v of message.logs) {
-      VideoRenderingLogs_VideoRenderingLog.encode(v!, writer.uint32(18).fork());
+      VideoRenderingLogs_VideoRenderingLog.encode(v!, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },

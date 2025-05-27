@@ -5,7 +5,7 @@
 // source: cosmos/base/v1beta1/coin.proto
 
 /* eslint-disable */
-import { Reader, Writer } from "protobufjs";
+import { Reader, Writer } from "protobufjs/minimal";
 import Long from "long";
 
 export const protobufPackage = "cosmos.base.v1beta1";
